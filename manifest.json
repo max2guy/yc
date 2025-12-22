@@ -1,0 +1,21 @@
+{
+  "name": "연천장로교회 청년부 기도 네트워크",
+  "short_name": "함께 기도해요",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFFCF2",
+  "theme_color": "#8D6E63",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2907/2907253.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2907/2907253.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
