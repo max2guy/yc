@@ -41,7 +41,6 @@
         #visualization svg { touch-action: none; }
         
         #weather-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
-        #visualizer-canvas { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 300px; height: 80px; z-index: 1; pointer-events: none; opacity: 0.5; filter: blur(1px); }
         
         /* --- Loading Screen --- */
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-gradient); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.5s; }
@@ -50,282 +49,83 @@
         .spinner { width: 50px; height: 50px; border: 5px solid #FFE0B2; border-top: 5px solid #FF7043; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- Top UI (Unified Capsule Design) --- */
+        /* --- Top UI (Slim Design) --- */
         .top-ui-common {
-            position: fixed; 
-            z-index: 100;
+            position: fixed; z-index: 100;
             background: rgba(255, 255, 255, 0.95);
             color: var(--main-node-color);
-            border: 2px solid var(--main-node-color);
-            border-radius: 50px; 
-            padding: 0 18px; 
-            height: 42px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px;
-            font-size: 0.95rem; 
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(141, 110, 99, 0.2);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            border: 1.5px solid var(--main-node-color);
+            border-radius: 50px; padding: 0 14px; height: 34px; 
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            font-size: 0.85rem; font-weight: bold;
+            box-shadow: 0 3px 8px rgba(141, 110, 99, 0.1);
+            backdrop-filter: blur(5px);
             white-space: nowrap;
-            line-height: 1;
         }
 
-        .camp-btn { 
-            cursor: pointer; 
-            top: 30px; 
-            left: 30px; 
-            transition: all 0.3s ease;
-        }
-        .camp-btn:hover { 
-            background: var(--main-node-color); 
-            color: white; 
-            transform: scale(1.05); 
-            box-shadow: 0 6px 16px rgba(141, 110, 99, 0.3);
-        }
-        
-        .online-counter { 
-            top: 30px; 
-            right: 30px; 
-        }
-        
-        .online-dot { 
-            width: 10px; 
-            height: 10px; 
-            background: #4CAF50; 
-            border-radius: 50%; 
-            animation: pulse 2s infinite;
-            flex-shrink: 0;
-        }
+        .camp-btn { cursor: pointer; top: 30px; left: 30px; transition: transform 0.2s; }
+        .camp-btn:hover { background: var(--main-node-color); color: white; transform: scale(1.05); }
+        .online-counter { top: 30px; right: 30px; }
+        .online-dot { width: 8px; height: 8px; background: #4CAF50; border-radius: 50%; animation: pulse 2s infinite; }
 
         @media (max-width: 768px) {
-            .top-ui-common { 
-                height: 38px; 
-                font-size: 0.9rem; 
-                padding: 0 16px; 
-                font-weight: 600;
-            }
-            .camp-btn { 
-                top: 20px; 
-                left: 20px; 
-            } 
-            .online-counter { 
-                top: 20px; 
-                right: 20px; 
-            }
-            .online-dot { 
-                width: 9px; 
-                height: 9px; 
-            }
+            .top-ui-common { height: 34px; font-size: 0.8rem; padding: 0 12px; }
+            .camp-btn { top: 20px; left: 20px; } 
+            .online-counter { top: 20px; right: 20px; }
         }
 
         /* --- Bottom Buttons --- */
         .float-btn {
-            position: fixed; 
-            z-index: 100; 
-            cursor: pointer; 
-            transition: transform 0.2s, background 0.2s;
-            box-shadow: 0 4px 12px rgba(141, 110, 99, 0.25); 
-            border: 2px solid;
-            width: 60px !important; 
-            height: 60px !important; 
-            border-radius: 50% !important; 
-            padding: 0 !important; 
-            margin: 0 !important;
-            display: flex !important; 
-            align-items: center !important; 
-            justify-content: center !important;
-            -webkit-appearance: none; 
-            appearance: none;
-            font-size: 1.6rem;
+            position: fixed; z-index: 100; cursor: pointer; transition: transform 0.2s;
+            box-shadow: 0 4px 10px rgba(141, 110, 99, 0.2); border: none;
+            width: 50px !important; height: 50px !important; 
+            border-radius: 50% !important; padding: 0 !important; margin: 0 !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+            -webkit-appearance: none; appearance: none;
         }
-        .float-btn:hover { 
-            transform: scale(1.1); 
-        }
-        .float-btn:active { 
-            transform: scale(0.95); 
-        }
+        .float-btn:hover { transform: scale(1.05); }
+        .float-btn:active { transform: scale(0.95); }
 
-        /* PC - 우측 하단 정렬 */
-        .admin-btn { 
-            bottom: 30px; 
-            left: 30px; 
-            background: #E0E0E0; 
-            color: #616161; 
-            border-color: #BDBDBD; 
-            font-size: 1.4rem; 
-        }
-        .admin-btn.active { 
-            background: #333; 
-            color: #FFD700; 
-            border-color: #FFD700; 
-        }
+        .admin-btn { bottom: 30px; left: 30px; background: #E0E0E0; color: #616161; border: 2px solid #BDBDBD; font-size: 1.2rem; }
+        .admin-btn.active { background: #333; color: #FFD700; border-color: #FFD700; }
         
-        .add-member-btn { 
-            bottom: 100px; 
-            left: 30px; 
-            background: white; 
-            color: var(--theme-orange); 
-            border-color: var(--theme-orange); 
-            font-size: 1.2rem;
-        }
-        .add-member-btn svg { 
-            fill: var(--theme-orange); 
-            width: 28px; 
-            height: 28px; 
-        }
+        .add-member-btn { bottom: 90px; left: 30px; background: white; color: var(--theme-orange); border: 2px solid var(--theme-orange); }
+        .add-member-btn svg { fill: var(--theme-orange); width: 24px; height: 24px; }
         
+        /* [수정 완료] 채팅 버튼 우측 하단 고정 */
         .chat-btn { 
-            bottom: 100px; 
-            right: 30px; 
-            background: #FFECB3; 
-            color: #5D4037; 
-            border-color: #FFCA28; 
-            font-size: 1.8rem !important; 
-            position: relative;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
+            bottom: 30px; right: 30px; 
+            background: #FFECB3; color: #5D4037; 
+            border: 2px solid #FFCA28; font-size: 1.4rem; 
+            position: relative; 
         }
-        
-        .music-control { 
-            bottom: 30px; 
-            right: 30px; 
-            background: rgba(255, 255, 255, 0.9); 
-            color: var(--main-node-color); 
-            border-color: var(--main-node-color); 
-            font-size: 1.8rem; 
-        }
-        
-        .chat-badge { 
-            position: absolute; 
-            top: -3px; 
-            right: -3px; 
-            width: 18px; 
-            height: 18px; 
-            background: #FF5252; 
-            border-radius: 50%; 
-            border: 2px solid white; 
-            display: none; 
-            animation: pulse-red 1.5s infinite; 
-            z-index: 101; 
-        }
-        .chat-badge.active { 
-            display: block; 
-        }
+        .chat-badge { position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; background: #FF5252; border-radius: 50%; border: 2px solid white; display: none; animation: pulse-red 1.5s infinite; z-index: 101; }
+        .chat-badge.active { display: block; }
 
-        /* Mobile - 아이폰 스타일 하단 균등 배치 */
         @media (max-width: 768px) {
-            .float-btn {
-                width: 58px !important;
-                height: 58px !important;
-                font-size: 1.5rem !important;
-            }
-            
-            .admin-btn { 
-                bottom: calc(20px + env(safe-area-inset-bottom)); 
-                left: calc(12.5% - 29px);
-                font-size: 1.3rem !important;
-            }
-            
-            .add-member-btn { 
-                bottom: calc(20px + env(safe-area-inset-bottom)); 
-                left: calc(37.5% - 29px);
-            }
-            .add-member-btn svg { 
-                width: 26px; 
-                height: 26px; 
-            }
-            
-            .chat-btn { 
-                bottom: calc(20px + env(safe-area-inset-bottom)) !important; 
-                right: calc(37.5% - 29px) !important;
-                font-size: 1.7rem !important;
-                display: flex !important;
-                opacity: 1 !important;
-                visibility: visible !important;
-                pointer-events: auto !important;
-            }
-            
-            .music-control { 
-                bottom: calc(20px + env(safe-area-inset-bottom)); 
-                right: calc(12.5% - 29px);
-                font-size: 1.7rem !important;
-            }
-            
-            #visualizer-canvas { 
-                bottom: 120px; 
-                width: 80%; 
-            }
+            .admin-btn { bottom: calc(20px + env(safe-area-inset-bottom)); left: 20px; }
+            .add-member-btn { bottom: calc(80px + env(safe-area-inset-bottom)); left: 20px; }
+            /* 모바일 하단 안전 영역 고려 */
+            .chat-btn { bottom: calc(20px + env(safe-area-inset-bottom)); right: 20px; }
         }
 
-        /* 브라우저별 최적화 */
-        @supports (-webkit-touch-callout: none) {
-            /* iOS Safari */
-            .float-btn {
-                -webkit-tap-highlight-color: transparent;
-            }
-        }
-        
-        @supports (-ms-ime-align: auto) {
-            /* Edge Legacy */
-            .popup-content {
-                left: 50%;
-                transform: translateX(-50%) scale(0.95);
-            }
-            .popup-overlay.active .popup-content {
-                transform: translateX(-50%) scale(1);
-            }
-        }
-
+        /* --- Popup & Modal --- */
         .popup-overlay {
-            position: fixed; 
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5); 
-            z-index: 2000;
-            display: none; 
-            justify-content: center; 
-            align-items: center;
-            opacity: 0; 
-            transition: opacity 0.2s ease;
-            padding: 20px;
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.5); z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.2s ease;
         }
-        .popup-overlay.active { 
-            display: flex; 
-            opacity: 1; 
-        }
+        .popup-overlay.active { display: flex; opacity: 1; }
 
         .popup-content {
-            background: #FFF8E1; 
-            width: 90%; 
-            max-width: 500px; 
-            height: 85vh; 
-            max-height: 700px;
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden;
-            transform: scale(0.95); 
-            transition: transform 0.2s ease;
+            background: #FFF8E1; width: 90%; max-width: 500px; height: 85vh; max-height: 700px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; overflow: hidden;
+            transform: scale(0.95); transition: transform 0.2s ease;
             position: relative;
-            margin: 0 auto;
         }
-        .popup-overlay.active .popup-content { 
-            transform: scale(1); 
-        }
-
-        @media (max-width: 768px) {
-            .popup-overlay {
-                padding: 10px;
-            }
-            .popup-content {
-                width: 95%;
-                height: 90vh;
-            }
-        }
+        .popup-overlay.active .popup-content { transform: scale(1); }
 
         .popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #FFE0B2; padding: 15px; flex-shrink: 0; background: rgba(255,255,255,0.5); }
         .popup-header h2 { margin: 0; font-size: 1.2rem; color: var(--main-node-color); }
@@ -417,7 +217,6 @@
     </div>
 
     <canvas id="weather-canvas"></canvas>
-    <canvas id="visualizer-canvas"></canvas>
     <div id="visualization"></div>
 
     <div id="lightbox" onclick="closeLightbox()">
@@ -428,11 +227,11 @@
     <button class="add-member-btn float-btn" onclick="event.stopPropagation(); addNewMember()" title="사람 추가">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
     </button>
+    
     <button class="chat-btn float-btn" onclick="event.stopPropagation(); toggleChatPopup()">
         💬
         <div id="chat-badge" class="chat-badge"></div>
     </button>
-    <button class="music-control float-btn" id="music-toggle" onclick="toggleMusic()" title="배경음악 켜기">🔇</button>
     
     <div id="admin-modal" onclick="closeAdminModal(event)">
         <div class="admin-box" onclick="event.stopPropagation()">
@@ -481,7 +280,7 @@
                 </div>
             </div>
             <div class="chat-input-area">
-                <input type="text" id="chat-msg" placeholder="메시지를 입력하세요...">
+                <input type="text" id="chat-msg" placeholder="메시지를 입력하세요..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
                 <button class="chat-send-btn" onclick="sendChatMessage()">
                     <span style="font-size: 1.2rem;">📤</span>
                 </button>
@@ -730,6 +529,7 @@
             const nodeEnter = node.enter().append("g")
                 .attr("cursor", "pointer")
                 .style("pointer-events", "all")
+                // [Touch Handling]
                 .on("touchstart", function(event, d) {
                     event.stopPropagation();
                     touchStartTime = Date.now();
@@ -761,7 +561,13 @@
                     .on("drag", dragged)
                     .on("end", dragended));
 
-            nodeEnter.append("circle").attr("r", 0).style("pointer-events", "all");
+            // [Safari Fix] -webkit-filter & will-change
+            nodeEnter.append("circle")
+                .attr("r", 0)
+                .style("pointer-events", "all")
+                .style("will-change", "transform, filter")
+                .style("-webkit-filter", d => d.type === 'root' ? "drop-shadow(0 0 15px #FFD54F)" : "drop-shadow(0 2px 4px rgba(0,0,0,0.1))");
+
             nodeEnter.append("rect").attr("rx", 10).attr("ry", 10).attr("fill", "rgba(255, 255, 255, 0.7)").style("opacity", 0).style("pointer-events", "none");
             nodeEnter.append("text").attr("text-anchor", "middle").attr("dominant-baseline", "middle").attr("font-weight", "bold").style("pointer-events", "none").style("opacity", 0);
             
@@ -802,7 +608,9 @@
                     if (count > 0) filterStr = `drop-shadow(0 0 ${Math.min(count*3, 30)}px rgba(255,87,34,${0.5+(count/20)}))`;
                 }
 
-                circle.attr("fill", fillUrl).style("filter", filterStr)
+                circle.attr("fill", fillUrl)
+                    .style("filter", filterStr)
+                    .style("-webkit-filter", filterStr) // Safari Fix
                     .attr("stroke", d => (d.type !== 'root' && getTotalPrayerCount(d) > 0) ? "#FF7043" : "#fff")
                     .attr("stroke-width", d => (d.type !== 'root' && getTotalPrayerCount(d) > 0) ? 3 : 2);
 
@@ -1000,9 +808,12 @@
         function editProfile() { 
             if (!currentMemberData) return;
             const newName = prompt("이름 수정:", currentMemberData.name);
-            if (newName !== null && newName.trim()) {
+            if (newName !== null) {
+                const newPhoto = prompt("프로필 사진 URL (비워두면 기본):", currentMemberData.photoUrl || "");
                 if (containsBannedWords(newName)) return alert("부적절한 단어");
-                membersRef.child(currentMemberData.firebaseKey).update({name: newName.trim()});
+                const updates = { name: newName.trim() };
+                if (newPhoto !== null) updates.photoUrl = newPhoto.trim();
+                membersRef.child(currentMemberData.firebaseKey).update(updates);
                 document.getElementById("panel-name").innerText = newName.trim();
             }
         }
@@ -1041,53 +852,37 @@
                 if(containsBannedWords(v)) return alert("부적절한 내용"); 
                 const p = currentMemberData.prayers||[]; 
                 p.unshift({content:v, date:new Date().toISOString().split('T')[0]}); 
-                membersRef.child(currentMemberData.firebaseKey).update({prayers:p})
-                    .then(() => {
-                        currentMemberData.prayers = p;
-                        renderPrayers(); // 즉시 UI 업데이트
-                    });
+                membersRef.child(currentMemberData.firebaseKey).update({prayers:p}); 
                 document.getElementById("new-prayer").value=""; 
             } 
         }
         function editPrayer(i) { 
             const v = prompt("수정:", currentMemberData.prayers[i].content); 
-            if(v && v.trim()) { 
+            if(v) { 
                 if(containsBannedWords(v)) return alert("부적절한 내용"); 
-                currentMemberData.prayers[i].content = v.trim(); 
-                membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers})
-                    .then(() => {
-                        renderPrayers(); // 즉시 UI 업데이트
-                    });
+                currentMemberData.prayers[i].content = v; 
+                membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); 
             } 
         }
         function deletePrayer(i) { 
             if(confirm("삭제하시겠습니까?")) { 
                 currentMemberData.prayers.splice(i,1); 
-                membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers})
-                    .then(() => {
-                        renderPrayers(); // 즉시 UI 업데이트
-                    });
+                membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); 
             } 
         }
         function adminDeletePrayer(i) { 
             if(confirm("관리자 강제 삭제?")) { 
                 currentMemberData.prayers.splice(i,1); 
-                membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers})
-                    .then(() => {
-                        renderPrayers(); // 즉시 UI 업데이트
-                    });
+                membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); 
             } 
         }
         function addReply(i) { 
             const v = prompt("답글:"); 
-            if(v && v.trim()) { 
+            if(v) { 
                 if(containsBannedWords(v)) return alert("부적절한 내용"); 
                 if(!currentMemberData.prayers[i].replies) currentMemberData.prayers[i].replies=[]; 
-                currentMemberData.prayers[i].replies.push({content:v.trim()}); 
-                membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers})
-                    .then(() => {
-                        renderPrayers(); // 즉시 UI 업데이트
-                    });
+                currentMemberData.prayers[i].replies.push({content:v}); 
+                membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); 
             } 
         }
 
@@ -1114,7 +909,7 @@
                     timestamp: firebase.database.ServerValue.TIMESTAMP
                 }); 
                 document.getElementById("chat-msg").value=""; 
-            }
+            } 
         }
         function deleteChatMessage(k) { if(confirm("관리자 삭제?")) messagesRef.child(k).remove(); }
         
@@ -1141,7 +936,7 @@
 
         // Weather
         async function fetchWeather() {
-            try {
+            try { 
                 const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=38.0964&longitude=127.0748&current_weather=true");
                 const d = await res.json();
                 centerNode.icon = d.current_weather.is_day ? "☀️" : "🌙";
@@ -1150,44 +945,7 @@
             } catch(e){ console.log('Weather fetch error:', e); }
         }
 
-        // Audio
-        const audio = new Audio('./background-music.mp3');
-        audio.loop = true;
-        audio.volume = 0.5;
-        let isMusicPlaying = false;
-
-        function toggleMusic() {
-            if (isMusicPlaying) {
-                audio.pause();
-                isMusicPlaying = false;
-            } else {
-                audio.play().then(() => {
-                    isMusicPlaying = true;
-                }).catch(err => console.error('Audio error:', err));
-            }
-            updateMusicButtonState();
-        }
-
-        function updateMusicButtonState() {
-            const btn = document.getElementById('music-toggle');
-            if (isMusicPlaying) {
-                btn.textContent = '🔊';
-                btn.style.background = 'linear-gradient(135deg, #8D6E63, #6D4C41)';
-                btn.style.color = 'white';
-                btn.style.borderColor = '#8D6E63';
-            } else {
-                btn.textContent = '🔇';
-                btn.style.background = 'rgba(255, 255, 255, 0.9)';
-                btn.style.color = '#8D6E63';
-                btn.style.borderColor = '#8D6E63';
-            }
-        }
-
-        document.addEventListener('click', () => {
-            if (audio.paused && !isMusicPlaying) {
-                audio.play().catch(() => {});
-            }
-        }, { once: true });
+        // REMOVED ALL AUDIO LOGIC
     </script>
 </body>
 </html>
