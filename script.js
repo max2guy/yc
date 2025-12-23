@@ -222,7 +222,7 @@ simulation = d3.forceSimulation()
 
 let link, node;
 
-// ★ 그래프 업데이트 함수 (선 디자인 및 타이밍 수정됨) ★
+// ★ 그래프 업데이트 함수 (선 디자인 얇게 수정됨) ★
 function updateGraph() {
     globalNodes = [centerNode, ...members];
     const links = members.map(m => ({ source: centerNode.id, target: m.id }));
@@ -239,18 +239,18 @@ function updateGraph() {
     link = linkGroup.selectAll("line").data(links, d => d.target.id || d.target);
     link.exit().remove();
     
-    // [디자인 수정] 1.5px 두께, 은은한 흰색, 지연 효과
+    // [디자인 수정] 0.8px 두께로 아주 가늘고 세련되게 수정
     const linkEnter = link.enter().append("line")
         .attr("stroke", "#FFFFFF")      // 흰색 빛
-        .attr("stroke-width", 1.5)      // 얇고 세련되게
+        .attr("stroke-width", 0.8)      // ★핵심: 0.8px로 아주 얇게
         .style("opacity", 0)            // 처음엔 투명하게 시작
-        .style("filter", "drop-shadow(0 1px 2px rgba(0,0,0,0.2))");
+        .style("filter", "drop-shadow(0 0.5px 1px rgba(0,0,0,0.15))"); // 그림자도 은은하게 축소
     
     // [애니메이션] 얼굴이 다 나온 뒤에 스르륵 나타남
     linkEnter.transition()
         .delay(800)                     
         .duration(1500)                 
-        .style("opacity", 0.6);         // 60% 밝기로 은은하게
+        .style("opacity", 0.5);         // 투명도 50%로 아주 은은하게
     
     link = linkEnter.merge(link);
 
@@ -723,7 +723,7 @@ function gameLoop(timestamp) {
         });
         node.attr("transform", d => `translate(${d.x},${d.y}) rotate(${d.rotation || 0})`);
         
-        // 선 업데이트
+        // [중요] 선 업데이트 위치
         if(link) {
             link.attr("x1", d => d.source.x)
                 .attr("y1", d => d.source.y)
