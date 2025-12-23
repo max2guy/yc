@@ -49,7 +49,7 @@
         .spinner { width: 50px; height: 50px; border: 5px solid #FFE0B2; border-top: 5px solid #FF7043; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- Top UI (Slim Design) --- */
+        /* --- Top UI --- */
         .top-ui-common {
             position: fixed; z-index: 100;
             background: rgba(255, 255, 255, 0.95);
@@ -86,13 +86,21 @@
         .float-btn:hover { transform: scale(1.05); }
         .float-btn:active { transform: scale(0.95); }
 
+        /* 좌측 하단 버튼들 (Admin, Add, Refresh) */
         .admin-btn { bottom: 30px; left: 30px; background: #E0E0E0; color: #616161; border: 2px solid #BDBDBD; font-size: 1.2rem; }
         .admin-btn.active { background: #333; color: #FFD700; border-color: #FFD700; }
         
         .add-member-btn { bottom: 90px; left: 30px; background: white; color: var(--theme-orange); border: 2px solid var(--theme-orange); }
         .add-member-btn svg { fill: var(--theme-orange); width: 24px; height: 24px; }
         
-        /* [수정] 채팅 버튼 우측 하단 고정 */
+        /* [NEW] 강제 새로고침 버튼 */
+        .refresh-btn { 
+            bottom: 150px; left: 30px; 
+            background: #ffffff; color: #333; 
+            border: 2px solid #333; font-size: 1.4rem; 
+        }
+
+        /* 우측 하단 버튼 (Chat) */
         .chat-btn { bottom: 30px; right: 30px; background: #FFECB3; color: #5D4037; border: 2px solid #FFCA28; font-size: 1.4rem; }
         .chat-badge { position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; background: #FF5252; border-radius: 50%; border: 2px solid white; display: none; animation: pulse-red 1.5s infinite; z-index: 101; }
         .chat-badge.active { display: block; }
@@ -100,7 +108,7 @@
         @media (max-width: 768px) {
             .admin-btn { bottom: calc(20px + env(safe-area-inset-bottom)); left: 20px; }
             .add-member-btn { bottom: calc(80px + env(safe-area-inset-bottom)); left: 20px; }
-            /* 모바일 하단 안전 영역 고려 */
+            .refresh-btn { bottom: calc(140px + env(safe-area-inset-bottom)); left: 20px; }
             .chat-btn { bottom: calc(20px + env(safe-area-inset-bottom)); right: 20px; }
         }
 
@@ -160,6 +168,7 @@
         
         .reply-section { margin-top: 10px; background-color: #FFF8E1; border-radius: 8px; padding: 10px; }
         .reply-item { font-size: 0.85rem; border-bottom: 1px dashed #FFE0B2; padding: 5px 0; color: #E65100; }
+        .reply-item:last-child { border-bottom: none; }
         
         .prayer-input-area { padding: 12px; background: #fff; border-top: 2px solid #FFE0B2; flex-shrink: 0; }
         .prayer-verse { background: #FFF8E1; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #5D4037; text-align: center; }
@@ -217,6 +226,8 @@
     <div id="lightbox" onclick="closeLightbox()">
         <img id="lightbox-img" src="" alt="확대 이미지">
     </div>
+
+    <button class="refresh-btn float-btn" onclick="event.stopPropagation(); forceRefresh()" title="강제 새로고침">🔄</button>
 
     <button class="admin-btn float-btn" id="admin-trigger" onclick="event.stopPropagation(); toggleAdminMode()" title="관리자 모드">🔒</button>
     <button class="add-member-btn float-btn" onclick="event.stopPropagation(); addNewMember()" title="사람 추가">
@@ -308,22 +319,35 @@
     </div>
 
     <script>
-        // ==========================================
-        // [개발용] PWA 캐시 강제 삭제 및 서비스워커 해제
-        // 수정 사항이 바로바로 보이도록 하는 코드입니다.
-        // ==========================================
+        // PWA Registration
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) {
-                    registration.unregister();
-                }
+            navigator.serviceWorker.register('sw.js').then(function(registration) {
+                console.log('ServiceWorker registration successful');
+            }, function(err) {
+                console.log('ServiceWorker registration failed: ', err);
             });
-            if ('caches' in window) {
-                caches.keys().then(function(names) {
-                    for (let name of names) {
-                        caches.delete(name);
-                    }
-                });
+        }
+
+        // [NEW] Force Refresh Function
+        function forceRefresh() {
+            if(confirm("앱을 최신 상태로 업데이트하시겠습니까?")) {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                        for(let registration of registrations) {
+                            registration.unregister();
+                        }
+                    });
+                }
+                if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                        for (let name of names) {
+                            caches.delete(name);
+                        }
+                        window.location.reload(true);
+                    });
+                } else {
+                    window.location.reload(true);
+                }
             }
         }
 
@@ -358,6 +382,17 @@
         let newMemberIds = new Set();
         let globalNodes = [];
         let simulation = null;
+
+        // Touch Variables
+        let touchStartTime = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isTouchMove = false;
+
+        // Drag Variables
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let isDragAction = false;
 
         const brightColors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9", "#DCEDC8", "#F0F4C3", "#FFF9C4", "#FFECB3", "#FFE0B2", "#FFCCBC", "#D7CCC8", "#F5F5F5", "#CFD8DC"];
 
@@ -443,16 +478,8 @@
             const idx = members.findIndex(m => m.firebaseKey === snap.key);
             if(idx !== -1) {
                 const old = members[idx];
-                members[idx] = { 
-                    ...val, 
-                    firebaseKey: snap.key, 
-                    x: old.x, y: old.y, vx: old.vx, vy: old.vy, 
-                    rotation: old.rotation, 
-                    rotationDirection: old.rotationDirection 
-                };
-                
-                updateNodeVisuals(); 
-
+                members[idx] = { ...val, firebaseKey: snap.key, x: old.x, y: old.y, vx: old.vx, vy: old.vy, rotation: old.rotation, rotationDirection: old.rotationDirection };
+                updateGraph();
                 if(currentMemberData && currentMemberData.firebaseKey === snap.key) {
                     currentMemberData = members[idx];
                     renderPrayers();
@@ -485,14 +512,6 @@
         simulation = d3.forceSimulation().force("link", d3.forceLink().id(d => d.id).distance(140)).force("charge", d3.forceManyBody().strength(-400)).force("center", d3.forceCenter(width / 2, height / 2)).force("collide", d3.forceCollide().radius(d => calculateRadius(d) + 30));
 
         let link, node;
-        let dragStartX, dragStartY;
-        let isDragAction = false; 
-
-        // **[TOUCH VARIABLES]**
-        let touchStartTime = 0;
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let isTouchMove = false;
 
         function updateGraph() {
             globalNodes = [centerNode, ...members];
@@ -520,7 +539,7 @@
             const nodeEnter = node.enter().append("g")
                 .attr("cursor", "pointer")
                 .style("pointer-events", "all")
-                // 1. Touch Start
+                // Touch Logic
                 .on("touchstart", function(event, d) {
                     event.stopPropagation();
                     touchStartTime = Date.now();
@@ -530,39 +549,31 @@
                     if (!event.active) simulation.alphaTarget(0.3).restart();
                     d.fx = d.x; d.fy = d.y;
                 })
-                // 2. Touch Move
                 .on("touchmove", function(event, d) {
                     if (event.touches.length > 0) {
                         const dx = event.touches[0].clientX - touchStartX;
                         const dy = event.touches[0].clientY - touchStartY;
-                        if (dx*dx + dy*dy > 100) isTouchMove = true;
+                        if (Math.sqrt(dx*dx + dy*dy) > 10) isTouchMove = true;
                         d.fx = event.touches[0].clientX; 
                         d.fy = event.touches[0].clientY;
                     }
                 })
-                // 3. Touch End
                 .on("touchend", function(event, d) {
                     if (!event.active) simulation.alphaTarget(0);
                     d.fx = null; d.fy = null;
                     const duration = Date.now() - touchStartTime;
-                    // TAP DETECTED
                     if (duration < 500 && !isTouchMove && d.type === 'member') {
                         event.preventDefault(); 
                         openPrayerPopup(d);
                     }
                 })
-                // 4. Mouse Click
-                .on("click", function(event, d) {
-                    event.stopPropagation();
-                    if (!isDragAction && d.type === 'member') openPrayerPopup(d);
-                })
-                // 5. Mouse Drag
                 .call(d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
                     .on("end", dragended));
 
             nodeEnter.append("circle").attr("stroke-width", 0).attr("r", 0)
+                .style("pointer-events", "all")
                 .style("will-change", "transform, filter")
                 .style("-webkit-filter", d => {
                     if (d.type === 'root') return "drop-shadow(0 0 15px #FFD54F)";
@@ -571,7 +582,6 @@
 
             nodeEnter.append("rect").attr("rx", 10).attr("ry", 10).attr("fill", "rgba(255, 255, 255, 0.7)").style("opacity", 0).style("pointer-events", "none");
             nodeEnter.append("text").attr("text-anchor", "middle").attr("dominant-baseline", "middle").attr("font-weight", "bold").style("pointer-events", "none").style("opacity", 0);
-            
             const badge = nodeEnter.append("g").attr("class", "node-badge").style("opacity", 0).style("pointer-events", "none");
             badge.append("circle").attr("r", 9).attr("cx", 0).attr("cy", 0).attr("fill", "#FF5252").attr("stroke", "#fff").attr("stroke-width", 2);
             badge.append("text").attr("x", 0).attr("y", 0).attr("dy", "0.35em").attr("text-anchor", "middle").attr("fill", "white").style("font-size", "11px").style("font-weight", "bold");
@@ -609,7 +619,7 @@
                 }
 
                 circle.attr("fill", fillUrl)
-                      .style("opacity", 1) // [FIX] Ensure Visible
+                      .style("opacity", 1) 
                       .style("filter", filterStr)
                       .style("-webkit-filter", filterStr)
                       .attr("stroke", d => (d.type !== 'root' && getTotalPrayerCount(d) > 0) ? "#FF7043" : "#fff")
@@ -648,7 +658,7 @@
                     const unread = Math.max(0, total - read);
                     const isNew = newMemberIds.has(d.id);
                     const badge = el.select(".node-badge");
-                    const bx = r * 0.707 + 5; const by = -(r * 0.707 + 5);
+                    const bx = r * 0.707 + 5, by = -(r * 0.707 + 5);
                     
                     if (unread > 0 || isNew) {
                         badge.style("display", "block");
@@ -677,14 +687,6 @@
                 node.attr("transform", d => `translate(${d.x},${d.y}) rotate(${d.rotation || 0})`);
             }
         }, 1000/60);
-
-        // MOUSE DRAG
-        let dragStartX, dragStartY;
-        let isDragAction = false;
-        let touchStartTime = 0;
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let isTouchMove = false;
 
         function dragstarted(event) { 
             isDragAction = false;
@@ -818,96 +820,6 @@
 
         function openLightbox(src) { document.getElementById('lightbox-img').src=src; document.getElementById('lightbox').classList.add('active'); }
         function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
-        
-        // [디자인 도구] 
-        (function() {
-            const btn = document.createElement('button');
-            btn.innerHTML = '🛠️ 위치 수정 모드';
-            Object.assign(btn.style, {
-                position: 'fixed', top: '10px', left: '10px', zIndex: '999999',
-                padding: '12px 20px', background: '#333', color: '#fff',
-                border: '2px solid white', borderRadius: '30px', 
-                boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
-                fontWeight: 'bold', fontSize: '14px', cursor: 'pointer'
-            });
-            document.body.appendChild(btn);
-
-            let isActive = false;
-            const targets = document.querySelectorAll('.float-btn, .camp-btn, .online-counter, .chat-btn');
-
-            btn.addEventListener('click', () => {
-                isActive = !isActive;
-                if (isActive) {
-                    btn.innerHTML = '✅ 이동 중... (완료 후 캡쳐)';
-                    btn.style.background = '#4CAF50'; 
-                    alert("이제 버튼들을 드래그해서 원하는 위치에 놓으세요!");
-                } else {
-                    btn.innerHTML = '🛠️ 위치 수정 모드 (꺼짐)';
-                    btn.style.background = '#333'; 
-                }
-
-                targets.forEach(el => {
-                    if (isActive) {
-                        el.style.outline = '4px solid #FF00FF'; 
-                        el.style.zIndex = '100000'; 
-                        el.style.transition = 'none'; 
-                        makeDraggable(el); 
-                    } else {
-                        el.style.outline = 'none';
-                    }
-                });
-            });
-
-            function makeDraggable(el) {
-                let startX, startY, initialLeft, initialTop;
-
-                const start = (e) => {
-                    if (!isActive) return;
-                    e.preventDefault(); 
-                    const point = e.touches ? e.touches[0] : e;
-                    startX = point.clientX;
-                    startY = point.clientY;
-                    
-                    const rect = el.getBoundingClientRect();
-                    el.style.bottom = 'auto'; 
-                    el.style.right = 'auto';
-                    el.style.left = rect.left + 'px';
-                    el.style.top = rect.top + 'px';
-                    
-                    initialLeft = rect.left;
-                    initialTop = rect.top;
-                };
-
-                const move = (e) => {
-                    if (!isActive || !startX) return;
-                    e.preventDefault();
-                    const point = e.touches ? e.touches[0] : e;
-                    const dx = point.clientX - startX;
-                    const dy = point.clientY - startY;
-                    
-                    el.style.left = `${initialLeft + dx}px`;
-                    el.style.top = `${initialTop + dy}px`;
-                };
-
-                const end = (e) => {
-                    if (!isActive || !startX) return;
-                    startX = null;
-
-                    const rect = el.getBoundingClientRect();
-                    const bottom = Math.round(window.innerHeight - rect.bottom);
-                    const right = Math.round(window.innerWidth - rect.right);
-                    
-                    btn.innerHTML = `📍 Bottom: ${bottom}px / Right: ${right}px`;
-                };
-
-                el.addEventListener('mousedown', start);
-                el.addEventListener('touchstart', start, {passive: false});
-                window.addEventListener('mousemove', move);
-                window.addEventListener('touchmove', move, {passive: false});
-                window.addEventListener('mouseup', end);
-                window.addEventListener('touchend', end);
-            }
-        })();
     </script>
 </body>
 </html>
