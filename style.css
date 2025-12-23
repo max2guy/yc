@@ -201,7 +201,7 @@ body {
 .camp-image { width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; }
 
 .chat-messages { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; background: #fff; }
-.chat-bubble-wrapper { display: flex; flex-direction: column; } /* 채팅 래퍼 추가 */
+.chat-bubble-wrapper { display: flex; flex-direction: column; }
 .chat-bubble { max-width: 75%; padding: 8px 12px; border-radius: 12px; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
 .chat-bubble.mine { align-self: flex-end; background: #FFCC80; color: #3E2723; border-top-right-radius: 2px; }
 .chat-bubble.others { align-self: flex-start; background: #f1f1f1; color: #333; border-top-left-radius: 2px; }
@@ -233,12 +233,13 @@ body {
 .color-swatch:hover { transform: scale(1.1); }
 .color-swatch.selected { border-color: #333; transform: scale(1.1); }
 
+/* --- Animations --- */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes popIn { to { transform: scale(1); } }
 @keyframes pulse-red { 0% { transform: scale(0.9); } 50% { transform: scale(1.2); } 100% { transform: scale(0.9); } }
 @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
 
-/* 선(Link) 스타일 */
+/* --- D3 Link & Node Styles --- */
 .links line {
     stroke: #D7CCC8; /* 선 색깔 (은은한 갈색) */
     stroke-width: 2px; /* 선 두께 */
@@ -246,7 +247,6 @@ body {
     pointer-events: none; /* 선이 클릭을 방해하지 않게 */
 }
 
-/* 노드 상호작용 스타일 */
 .nodes g {
     cursor: pointer;
     transition: opacity 0.3s;
