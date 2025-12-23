@@ -130,8 +130,8 @@
             .chat-btn { bottom: calc(20px + env(safe-area-inset-bottom)); right: 20px; }
         }
 
-        /* --- Update Toast Notification --- */
-        #update-toast {
+        /* --- Update Toast & Weather Toast --- */
+        .system-toast {
             position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px);
             background: #333; color: white; padding: 12px 24px;
             border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
@@ -140,7 +140,14 @@
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             opacity: 0; pointer-events: none;
         }
-        #update-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+        .system-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+        
+        #weather-toast {
+            top: auto; bottom: 100px;
+            background: rgba(255, 255, 255, 0.9); color: #5D4037;
+            border: 1px solid #8D6E63;
+        }
+        
         .refresh-icon { animation: spin-slow 2s infinite linear; font-size: 1.1rem; }
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -268,9 +275,13 @@
         <img id="lightbox-img" src="" alt="확대 이미지">
     </div>
 
-    <div id="update-toast" onclick="window.location.reload(true)">
+    <div id="update-toast" class="system-toast" onclick="window.location.reload(true)">
         <div class="refresh-icon">🔄</div>
         <span>새 버전이 있습니다! (터치하여 업데이트)</span>
+    </div>
+
+    <div id="weather-toast" class="system-toast">
+        <span id="weather-text">날씨 정보를 불러오는 중...</span>
     </div>
 
     <div id="menu-container">
@@ -367,28 +378,23 @@
     </div>
 
     <script>
-        // PWA Update Detection Logic
+        // PWA Registration
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(reg => {
-                reg.addEventListener('updatefound', () => {
-                    const newWorker = reg.installing;
+            navigator.serviceWorker.register('sw.js').then(function(registration) {
+                console.log('ServiceWorker registration successful');
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                             document.getElementById('update-toast').classList.add('show');
                         }
                     });
                 });
-            });
-
-            let refreshing;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (refreshing) return;
-                window.location.reload();
-                refreshing = true;
+            }, function(err) {
+                console.log('ServiceWorker registration failed: ', err);
             });
         }
 
-        // Toggle Left Menu
         let isFabOpen = false;
         function toggleFabMenu() {
             isFabOpen = !isFabOpen;
@@ -904,8 +910,8 @@
             }
         });
         
-        // [OpenWeatherMap API Logic]
-        const apiKey = "39d8b0517ec448eb742a1ee5e39c2bf3"; // Provided Key
+        // [MODIFIED] Weather Logic with API Key & Fallback & Toast
+        const apiKey = "39d8b0517ec448eb742a1ee5e39c2bf3"; 
 
         async function fetchWeather() {
             if (navigator.geolocation) {
@@ -914,48 +920,96 @@
                         try {
                             const lat = position.coords.latitude;
                             const lon = position.coords.longitude;
+                            // OWM (Real Location)
                             const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`);
                             const d = await res.json();
-                            applyWeather(d);
-                        } catch(e) { console.log('Weather Error (Real)', e); useDefaultWeather(); }
+                            applyWeather(d, true); // true = real location
+                        } catch(e) { 
+                            console.log('OWM Error, using Fallback'); 
+                            useFallbackWeather(); 
+                        }
                     },
                     (err) => {
-                        console.log('Location denied, using default.', err);
-                        useDefaultWeather();
+                        console.log('Location denied, using Fallback');
+                        useFallbackWeather();
                     }
                 );
             } else {
-                useDefaultWeather();
+                useFallbackWeather();
             }
         }
 
-        async function useDefaultWeather() {
+        async function useFallbackWeather() {
              try { 
-                // Default: Yeoncheon-gun (38.0964, 127.0748)
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=38.0964&lon=127.0748&appid=${apiKey}&units=metric`);
+                // Open-Meteo (Free, No Key) as Fallback
+                const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=38.0964&longitude=127.0748&current_weather=true");
                 const d = await res.json();
-                applyWeather(d);
-            } catch(e){ console.log('Weather fetch error:', e); }
+                
+                // Convert Open-Meteo format to OWM-like structure for `applyWeather` compatibility
+                const simulatedData = {
+                    name: "연천군 (기본)",
+                    main: { temp: d.current_weather.temperature },
+                    weather: [{ id: convertMeteoCode(d.current_weather.weathercode) }],
+                    sys: { sunrise: 0, sunset: 0 }, // fallback logic handles day/night roughly
+                    dt: Date.now() / 1000
+                };
+                
+                // Rough Day/Night check for fallback
+                const hour = new Date().getHours();
+                const isDay = hour > 6 && hour < 18;
+                centerNode.icon = isDay ? "☀️" : "🌙"; // Direct set for fallback
+                
+                applyWeather(simulatedData, false);
+            } catch(e){ 
+                console.log('Fallback Error:', e); 
+                showWeatherToast("날씨 정보 없음", "");
+            }
         }
 
-        function applyWeather(d) {
-            const isDay = d.dt > d.sys.sunrise && d.dt < d.sys.sunset;
-            centerNode.icon = isDay ? "☀️" : "🌙";
+        function convertMeteoCode(code) {
+            // Simple conversion: OpenMeteo -> OWM Group
+            if (code >= 50 && code <= 69) return 500; // Rain
+            if (code >= 70 && code <= 79) return 600; // Snow
+            return 800; // Clear
+        }
+
+        function applyWeather(d, isReal) {
+            const temp = Math.round(d.main.temp);
+            const location = d.name || "연천군";
+            let statusText = "맑음";
+
+            // OWM Logic
+            if (isReal) {
+                const isDay = d.dt > d.sys.sunrise && d.dt < d.sys.sunset;
+                centerNode.icon = isDay ? "☀️" : "🌙";
+            }
             
             const code = d.weather[0].id;
             
-            // Rain (2xx, 3xx, 5xx)
             if (code >= 200 && code < 600) {
                 createRain();
                 centerNode.icon = "🌧️";
+                statusText = "비";
             } 
-            // Snow (6xx)
             else if (code >= 600 && code < 700) {
                 createSnow();
                 centerNode.icon = "❄️";
+                statusText = "눈";
+            } else if (code > 800) {
+                 statusText = "흐림";
+                 centerNode.icon = "☁️";
             }
-            
+
             updateNodeVisuals();
+            showWeatherToast(location, `${statusText}, ${temp}°C`);
+        }
+
+        function showWeatherToast(loc, info) {
+            const toast = document.getElementById('weather-toast');
+            const text = document.getElementById('weather-text');
+            text.innerHTML = `📍 ${loc}<br>${info}`;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
 
         const wc = document.getElementById('weather-canvas'); const wctx = wc.getContext('2d'); let wParts = [];
