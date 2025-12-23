@@ -99,6 +99,19 @@ presenceRef.on('value', (snapshot) => {
 const bannedWords = ["욕설", "비속어", "시발", "씨발", "개새끼", "병신", "지랄", "존나", "졸라", "미친", "성매매", "섹스", "야동", "조건만남", "주식", "코인", "비트코인", "투자", "리딩방", "수익", "바보", "멍청이"];
 function containsBannedWords(text) { return bannedWords.some(word => text.includes(word)); }
 
+// [중요] 관리자 인증 상태 체크
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        isAdmin = true;
+        document.getElementById('body').classList.add('admin-mode');
+        document.getElementById('admin-trigger').classList.add('active');
+    } else {
+        isAdmin = false;
+        document.getElementById('body').classList.remove('admin-mode');
+        document.getElementById('admin-trigger').classList.remove('active');
+    }
+});
+
 let centerNode = { id: "center", name: "연천장로교회\n청년부\n함께 기도해요", type: "root", icon: "✝️", color: "#FFF8E1" };
 let members = [];
 let isDataLoaded = false;
@@ -116,8 +129,6 @@ function loadData() {
         
         if (mData) {
             members = Object.keys(mData).map(key => ({ firebaseKey: key, ...mData[key] }));
-        } else {
-            // 초기 데이터 없음
         }
 
         if(cData && cData.icon) centerNode.icon = cData.icon;
@@ -183,7 +194,7 @@ membersRef.on('child_removed', (snap) => {
     }
 });
 
-// 5. D3 시각화 설정
+// 5. D3 시각화 설정 (선 그리기 수정됨)
 const width = window.innerWidth;
 const height = window.innerHeight;
 const svg = d3.select("#visualization").append("svg").attr("width", width).attr("height", height);
@@ -212,11 +223,14 @@ function updateGraph() {
 
     link = linkGroup.selectAll("line").data(links, d => d.target.id || d.target);
     link.exit().remove();
-    const linkEnter = link.enter().append("line")
-        .attr("stroke", "#D7CCC8").attr("stroke-width", 2).attr("stroke-opacity", 0);
     
-    if (isFirstRender) linkEnter.transition().delay(2200).duration(800).attr("stroke-opacity", 0.5);
-    else linkEnter.transition().duration(500).attr("stroke-opacity", 0.5);
+    // [해결] 선이 안 보이는 문제: 자바스크립트에서 직접 스타일을 강력하게 적용
+    const linkEnter = link.enter().append("line")
+        .attr("stroke", "#FFFFFF")     // 흰색
+        .attr("stroke-width", 3)       // 3px 두께 (잘 보이게)
+        .style("opacity", 0.9)         // 90% 불투명
+        .style("filter", "drop-shadow(0 1px 3px rgba(0,0,0,0.5))"); // 그림자를 줘서 배경과 분리
+    
     link = linkEnter.merge(link);
 
     node = nodeGroup.selectAll("g").data(globalNodes, d => d.id);
@@ -427,31 +441,32 @@ function selectColor(color) {
     closeColorModal();
 }
 
-// [수정] 관리자 인증 (임시: 아직은 암호 유지하되, 추후 Auth 교체 준비)
+// 관리자 인증 (Firebase Auth 사용)
 function toggleAdminMode() { 
     if(isAdmin) { 
-        isAdmin=false; 
-        document.getElementById('body').classList.remove('admin-mode'); 
-        document.getElementById('admin-trigger').classList.remove('active'); 
-        alert("관리자 모드 해제"); 
-        if(currentMemberData) renderPrayers(); 
+        firebase.auth().signOut().then(() => {
+            alert("관리자 모드 해제");
+        });
     } else openAdminModal(); 
 }
 function openAdminModal() { document.getElementById('admin-modal').classList.add('active'); document.getElementById('admin-pw').focus(); }
 function closeAdminModal(e) { if(e.target.id === 'admin-modal') document.getElementById('admin-modal').classList.remove('active'); }
+
 function checkAdmin() { 
-    // [중요] 임시로 기존 로직 유지, 추후 Firebase Auth로 교체 권장
-    if(document.getElementById('admin-pw').value === "006291") { 
-        isAdmin=true; 
-        document.getElementById('admin-modal').classList.remove('active'); 
-        document.getElementById('admin-trigger').classList.add('active'); 
-        document.getElementById('body').classList.add('admin-mode'); 
-        alert("관리자 모드 활성"); 
+    const inputPw = document.getElementById('admin-pw').value;
+    const adminEmail = "admin@church.com"; // Firebase에 등록된 이메일
+    
+    firebase.auth().signInWithEmailAndPassword(adminEmail, inputPw)
+    .then(() => {
+        document.getElementById('admin-modal').classList.remove('active');
+        alert("관리자 모드 활성! 환영합니다.");
         document.getElementById('admin-pw').value=""; 
-        if(currentMemberData) renderPrayers(); 
-        const btns = document.querySelectorAll('.admin-delete-chat'); 
-        btns.forEach(b => b.style.display = 'inline-block'); 
-    } else alert("비밀번호 오류"); 
+        if(currentMemberData) renderPrayers();
+    })
+    .catch((error) => {
+        alert("비밀번호가 틀렸습니다.");
+        console.error(error);
+    });
 }
 
 function addNewMember() { const n = prompt("이름:"); if(n && n.trim()) { if(containsBannedWords(n)) return alert("부적절한 이름"); membersRef.push({id:`member_${Date.now()}`, name:n.trim(), type:"member", color:getRandomColor(), prayers:[], rotation:0, rotationDirection:1}); } }
@@ -470,7 +485,7 @@ function editProfile() {
     }
 }
 
-// [보안 수정] 안전한 렌더링을 위한 헬퍼 함수
+// 헬퍼 함수
 function createSafeElement(tag, className, text) {
     const el = document.createElement(tag);
     if (className) el.className = className;
@@ -478,7 +493,6 @@ function createSafeElement(tag, className, text) {
     return el;
 }
 
-// [보안 수정] XSS 방지 렌더링 함수
 function renderPrayers() {
     const list = document.getElementById("prayer-list"); 
     list.innerHTML = "";
@@ -490,16 +504,15 @@ function renderPrayers() {
 
     currentMemberData.prayers.forEach((p, i) => {
         const div = createSafeElement("div", "prayer-card");
-        
         const header = createSafeElement("div", "prayer-header");
         const dateSpan = createSafeElement("span", "", p.date);
         header.appendChild(dateSpan);
-
         const content = createSafeElement("div", "prayer-content", p.content);
-
         const actionGroup = createSafeElement("div", "action-group");
+        
         let delBtnHtml = `<button class="text-btn" onclick="deletePrayer(${i})">삭제</button>`;
         if(isAdmin) delBtnHtml = `<button class="text-btn admin-delete-btn" onclick="adminDeletePrayer(${i})">강제삭제</button>`;
+        
         actionGroup.innerHTML = `
             <button class="text-btn" onclick="editPrayer(${i})">수정</button>
             ${delBtnHtml}
@@ -518,15 +531,34 @@ function renderPrayers() {
             });
             div.appendChild(replySection);
         }
-
         list.appendChild(div);
     });
 }
 
+// [해결] 실시간 삭제 기능 개선
+function deletePrayer(i) {
+    if(confirm("정말 삭제하시겠습니까?")) {
+        // 1. 화면에서 즉시 제거 (사용자에게 빠름을 느끼게 함)
+        currentMemberData.prayers.splice(i, 1);
+        renderPrayers(); 
+        
+        // 2. 서버에 업데이트 (빈 배열 처리 포함)
+        const updateData = currentMemberData.prayers.length > 0 ? currentMemberData.prayers : [];
+        membersRef.child(currentMemberData.firebaseKey).update({prayers: updateData});
+    }
+}
+
+function adminDeletePrayer(i) { 
+    if(confirm("관리자 권한으로 삭제하시겠습니까?")) { 
+        currentMemberData.prayers.splice(i,1); 
+        renderPrayers();
+        const updateData = currentMemberData.prayers.length > 0 ? currentMemberData.prayers : [];
+        membersRef.child(currentMemberData.firebaseKey).update({prayers: updateData}); 
+    } 
+}
+
 function addPrayer() { const v = document.getElementById("new-prayer").value.trim(); if(v) { if(containsBannedWords(v)) return alert("부적절한 내용"); const p = currentMemberData.prayers||[]; p.unshift({content:v, date:new Date().toISOString().split('T')[0]}); membersRef.child(currentMemberData.firebaseKey).update({prayers:p}); document.getElementById("new-prayer").value=""; } }
 function editPrayer(i) { const v = prompt("수정:", currentMemberData.prayers[i].content); if(v) { if(containsBannedWords(v)) return alert("부적절한 내용"); currentMemberData.prayers[i].content = v; membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); } }
-function deletePrayer(i) { if(confirm("삭제?")) { currentMemberData.prayers.splice(i,1); membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); } }
-function adminDeletePrayer(i) { if(confirm("관리자 강제 삭제?")) { currentMemberData.prayers.splice(i,1); membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); } }
 function addReply(i) { const v = prompt("답글:"); if(v) { if(containsBannedWords(v)) return alert("부적절한 내용"); if(!currentMemberData.prayers[i].replies) currentMemberData.prayers[i].replies=[]; currentMemberData.prayers[i].replies.push({content:v}); membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); } }
 
 function sendChatMessage() { const t = document.getElementById("chat-msg").value; if(t) { messagesRef.push({name:"익명", text:t, senderId:mySessionId, timestamp: firebase.database.ServerValue.TIMESTAMP}); document.getElementById("chat-msg").value=""; }}
@@ -648,9 +680,9 @@ function createSnow() {
 function openLightbox(src) { document.getElementById('lightbox-img').src=src; document.getElementById('lightbox').classList.add('active'); }
 function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
 
-// [성능 최적화] 통합 게임 루프 (날씨+회전)
+// 8. 통합 게임 루프
 let lastTime = 0;
-const fpsInterval = 1000 / 60; // 60 FPS 제한
+const fpsInterval = 1000 / 60; 
 
 function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
@@ -668,6 +700,14 @@ function gameLoop(timestamp) {
             else if(m.rotation < -360) m.rotation += 360; 
         });
         node.attr("transform", d => `translate(${d.x},${d.y}) rotate(${d.rotation || 0})`);
+        
+        // [중요] 선 업데이트 위치
+        if(link) {
+            link.attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+        }
     }
 
     // 2. 날씨 애니메이션
