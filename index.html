@@ -49,21 +49,18 @@
         .spinner { width: 50px; height: 50px; border: 5px solid #FFE0B2; border-top: 5px solid #FF7043; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- Top UI (Capsule Fixed) --- */
+        /* --- Top UI --- */
         .top-ui-common {
             position: fixed; z-index: 100;
             background: rgba(255, 255, 255, 0.95);
             color: var(--main-node-color);
             border: 1.5px solid var(--main-node-color);
             border-radius: 50px; 
-            
-            /* [FIXED] PC/Mobile 동일 비율 적용 */
             height: 35px;       
             padding: 0 14px;    
             font-size: 0.85rem;    
             line-height: 1;     
             box-sizing: border-box; 
-
             display: flex; align-items: center; justify-content: center; gap: 8px;
             font-weight: 700;
             box-shadow: 0 3px 8px rgba(141, 110, 99, 0.15);
@@ -112,7 +109,6 @@
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative; 
         }
-        
         .menu-open .sub-btn {
             opacity: 1; transform: translateY(0) scale(1);
             pointer-events: auto;
@@ -120,10 +116,8 @@
 
         .admin-btn { background: #E0E0E0; color: #616161; border: 2px solid #BDBDBD; font-size: 1.2rem; }
         .admin-btn.active { background: #333; color: #FFD700; border-color: #FFD700; }
-        
         .add-member-btn { background: white; color: var(--theme-orange); border: 2px solid var(--theme-orange); }
         .add-member-btn svg { fill: var(--theme-orange); width: 24px; height: 24px; }
-        
         .refresh-btn { background: white; color: #333; font-size: 1.4rem; border: 2px solid #333; }
 
         /* Chat Button */
@@ -427,7 +421,7 @@
         let globalNodes = [];
         let simulation = null;
         
-        // [IMPORTANT] Record load time to filter old messages
+        // Load Time for Badges
         const loadTime = Date.now();
 
         let touchStartTime = 0;
@@ -525,7 +519,6 @@
                 members[idx] = { ...val, firebaseKey: snap.key, x: old.x, y: old.y, vx: old.vx, vy: old.vy, rotation: old.rotation, rotationDirection: old.rotationDirection };
                 updateGraph();
                 
-                // [FIX] 실시간 배지 업데이트 (중요)
                 updateNodeVisuals();
 
                 if(currentMemberData && currentMemberData.firebaseKey === snap.key) {
@@ -587,6 +580,7 @@
             const nodeEnter = node.enter().append("g")
                 .attr("cursor", "pointer")
                 .style("pointer-events", "all")
+                // [FIXED] Click/Touch Logic
                 .on("touchstart", function(event, d) {
                     event.stopPropagation();
                     touchStartTime = Date.now();
@@ -614,6 +608,11 @@
                         openPrayerPopup(d);
                     }
                 })
+                .on("click", function(event, d) {
+                    event.stopPropagation();
+                    // Mouse Click Logic: Only if not dragged
+                    if (!isDragAction && d.type === 'member') openPrayerPopup(d);
+                })
                 .call(d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
@@ -636,9 +635,7 @@
             node = nodeEnter.merge(node);
             node.style("pointer-events", "all");
 
-            // [FIX] Force visual update specifically for badges
             updateNodeVisuals();
-            
             simulation.nodes(globalNodes); simulation.force("link").links(links); simulation.alpha(1).restart();
         }
 
@@ -650,8 +647,11 @@
                 const r = calculateRadius(d);
                 const circle = el.select("circle");
                 
+                // [FIXED] Sync Text with Circle
+                const textDelay = isFirstRender ? (d.id === 'center' ? 0 : 800 + (globalNodes.indexOf(d) * 80)) : 0;
+                
                 if (circle.attr("r") == 0) {
-                     const delay = isFirstRender ? (d.id === 'center' ? 0 : 1100 + (globalNodes.indexOf(d) * 60)) : 0;
+                     const delay = textDelay;
                      const dur = isFirstRender ? 800 : 500;
                      circle.transition().delay(delay).duration(dur).ease(d3.easeElasticOut.amplitude(3)).attr("r", r);
                 } else {
@@ -683,7 +683,8 @@
                     textEl.append("tspan").text(d.icon).attr("x", 0).attr("dy", "-1.2em").attr("font-size", "2.8rem");
                     d.name.split("\n").forEach((l, i) => textEl.append("tspan").text(l).attr("x", 0).attr("dy", i===0?"4.0em":"1.3em").attr("font-size", "14px"));
                     rectEl.style("display", "none");
-                    textEl.transition().delay(isFirstRender?3300:0).duration(800).style("opacity", 1);
+                    // [FIXED] Sync text appearance
+                    textEl.transition().delay(textDelay).duration(800).style("opacity", 1);
                 } else {
                     if (d.photoUrl) textY = r + 15;
                     textEl.attr("y", textY).text(d.name).attr("font-size", "12px");
@@ -694,11 +695,12 @@
                     if (d.photoUrl) {
                         rectEl.style("display", "block")
                             .attr("x", -w / 2).attr("y", textY - 10).attr("width", w).attr("height", 20)
-                            .transition().delay(isFirstRender?3300:0).duration(500).style("opacity", 1);
+                            .transition().delay(textDelay).duration(500).style("opacity", 1);
                     } else {
                         rectEl.style("display", "none");
                     }
-                    textEl.transition().delay(isFirstRender?3300:0).duration(800).style("opacity", 1);
+                    // [FIXED] Sync text appearance
+                    textEl.transition().delay(textDelay).duration(800).style("opacity", 1);
                 }
 
                 if (d.type !== 'root') {
@@ -713,10 +715,8 @@
                         badge.style("display", "block");
                         badge.select("circle").attr("fill", unread > 0 ? "#FF5252" : "#FF9800");
                         badge.select("text").text(unread > 0 ? unread : "N");
-                        
-                        // [CRITICAL FIX] Badge Transition sync
-                        const delay = isFirstRender ? (d.id === 'center' ? 0 : 800 + (globalNodes.indexOf(d) * 80)) : 0;
-                        badge.transition().delay(delay).duration(200).attr("transform", `translate(${bx}, ${by})`).style("opacity", 1);
+                        // [FIXED] Sync badge appearance (slightly delayed to pop after node)
+                        badge.transition().delay(textDelay + 400).duration(200).attr("transform", `translate(${bx}, ${by})`).style("opacity", 1);
                     } else {
                         badge.style("opacity", 0);
                     }
@@ -840,20 +840,16 @@
         function sendChatMessage() { const t = document.getElementById("chat-msg").value; if(t) { messagesRef.push({name:"익명", text:t, senderId:mySessionId, timestamp: firebase.database.ServerValue.TIMESTAMP}); document.getElementById("chat-msg").value=""; }}
         function deleteChatMessage(k) { if(confirm("관리자 삭제?")) messagesRef.child(k).remove(); }
         
-        // [FIX: Real-time Badge Logic]
         messagesRef.limitToLast(50).on('child_added', snap => {
             const d = snap.val();
-            // Only show badge if message is NEW (arrived after page load) and NOT mine
+            // [FIXED] Real-time Badge logic
             if (d.timestamp > loadTime && d.senderId !== mySessionId) {
                 const popup = document.getElementById('chat-popup');
                 if (!popup.classList.contains('active')) {
                     document.getElementById('chat-badge').classList.add('active');
-                    // Optional: Vibration for mobile
-                    if (navigator.vibrate) navigator.vibrate(200);
                 }
             }
 
-            // Render Message
             const isMine = d.senderId === mySessionId;
             const div = document.createElement("div"); div.className = "chat-bubble-wrapper"; div.setAttribute('data-key', snap.key);
             div.style.display="flex"; div.style.flexDirection="column"; div.style.alignItems=isMine?"flex-end":"flex-start";
@@ -871,17 +867,41 @@
             updateNodeVisuals(); } catch(e){}
         }
 
+        // [MODIFIED] Weather: 35 particles (PC/Mobile Same)
         const wc = document.getElementById('weather-canvas'); const wctx = wc.getContext('2d'); let wParts = [];
         function resizeWeatherCanvas() { wc.width = window.innerWidth; wc.height = window.innerHeight; }
-        function createRain() { wParts=[]; for(let i=0;i<70;i++) wParts.push({x:Math.random()*wc.width, y:Math.random()*wc.height, s:3+Math.random()*4, l:7+Math.random()*8}); animateWeather('rain'); }
-        function createSnow() { wParts=[]; for(let i=0;i<70;i++) wParts.push({x:Math.random()*wc.width, y:Math.random()*wc.height, s:1+Math.random()*2, r:2+Math.random()*3}); animateWeather('snow'); }
+        
+        function createRain() { 
+            wParts=[]; 
+            for(let i=0;i<35;i++) { // Reduced to 35
+                wParts.push({ x: Math.random()*wc.width, y: Math.random()*wc.height, s: 3+Math.random()*4, l: 7+Math.random()*8 });
+            }
+            animateWeather('rain'); 
+        }
+        
+        function createSnow() { 
+            wParts=[]; 
+            for(let i=0;i<35;i++) { // Reduced to 35
+                wParts.push({ x: Math.random()*wc.width, y: Math.random()*wc.height, s: 1+Math.random()*2, r: 2+Math.random()*3 });
+            }
+            animateWeather('snow'); 
+        }
+        
         function animateWeather(type) {
             wctx.clearRect(0,0,wc.width,wc.height); 
             wctx.fillStyle = "rgba(255,255,255,0.8)"; 
             wctx.strokeStyle = "rgba(174,194,224,0.8)"; 
             wctx.lineWidth=1;
             
-            wParts.forEach(p => { if(type==='rain') { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.lineTo(p.x,p.y+p.l); wctx.stroke(); p.y+=p.s; if(p.y>wc.height) p.y=-p.l; } else { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.arc(p.x,p.y,p.r,0,Math.PI*2); wctx.fill(); p.y+=p.s; if(p.y>wc.height) p.y=-5; } });
+            wParts.forEach(p => { 
+                if(type==='rain') { 
+                    wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.lineTo(p.x,p.y+p.l); wctx.stroke(); 
+                    p.y+=p.s; if(p.y>wc.height) p.y=-p.l; 
+                } else { 
+                    wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.arc(p.x,p.y,p.r,0,Math.PI*2); wctx.fill(); 
+                    p.y+=p.s; if(p.y>wc.height) p.y=-5; 
+                } 
+            });
             requestAnimationFrame(() => animateWeather(type));
         }
 
