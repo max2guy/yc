@@ -32,7 +32,7 @@
             overflow: hidden;
             color: var(--text-color);
             overscroll-behavior: none;
-            touch-action: pan-x pan-y;
+            touch-action: none;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
@@ -74,7 +74,7 @@
             .online-counter { top: 20px; right: 20px; }
         }
 
-        /* --- Floating Buttons (Bottom Right Row) --- */
+        /* --- Buttons --- */
         .float-btn {
             position: fixed; z-index: 100; cursor: pointer; transition: transform 0.2s;
             box-shadow: 0 4px 10px rgba(141, 110, 99, 0.2); border: none;
@@ -82,66 +82,89 @@
             border-radius: 50% !important; padding: 0 !important; margin: 0 !important;
             display: flex !important; align-items: center !important; justify-content: center !important;
             -webkit-appearance: none; appearance: none;
-            /* 정렬을 위한 기본 위치 (하단 고정) */
-            bottom: 30px;
         }
         .float-btn:hover { transform: scale(1.05); }
         .float-btn:active { transform: scale(0.95); }
 
-        /* 1번 타자: 채팅 (가장 우측) */
-        .chat-btn { 
-            right: 30px; 
-            background: #FFECB3; color: #5D4037; 
-            border: 2px solid #FFCA28; font-size: 1.4rem; 
-        }
-        
-        /* 2번 타자: 사람 추가 (그 왼쪽) */
-        .add-member-btn { 
-            right: 110px; /* 30 + 80 */
-            background: white; color: var(--theme-orange); 
-            border: 2px solid var(--theme-orange); 
-        }
-        .add-member-btn svg { fill: var(--theme-orange); width: 24px; height: 24px; }
-
-        /* 3번 타자: 관리자 (더 왼쪽) */
-        .admin-btn { 
-            right: 190px; /* 110 + 80 */
-            background: #E0E0E0; color: #616161; 
-            border: 2px solid #BDBDBD; font-size: 1.2rem; 
-        }
+        .admin-btn { bottom: 30px; left: 30px; background: #E0E0E0; color: #616161; border: 2px solid #BDBDBD; font-size: 1.2rem; }
         .admin-btn.active { background: #333; color: #FFD700; border-color: #FFD700; }
-
+        
+        .add-member-btn { bottom: 90px; left: 30px; background: white; color: var(--theme-orange); border: 2px solid var(--theme-orange); }
+        .add-member-btn svg { fill: var(--theme-orange); width: 24px; height: 24px; }
+        
+        /* 채팅 버튼 우측 하단 */
+        .chat-btn { bottom: 30px; right: 30px; background: #FFECB3; color: #5D4037; border: 2px solid #FFCA28; font-size: 1.4rem; }
         .chat-badge { position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; background: #FF5252; border-radius: 50%; border: 2px solid white; display: none; animation: pulse-red 1.5s infinite; z-index: 101; }
         .chat-badge.active { display: block; }
 
         @media (max-width: 768px) {
-            /* 모바일 하단 안전 영역 고려 */
-            .float-btn { bottom: calc(30px + env(safe-area-inset-bottom)); }
+            .admin-btn { bottom: calc(20px + env(safe-area-inset-bottom)); left: 20px; }
+            .add-member-btn { bottom: calc(80px + env(safe-area-inset-bottom)); left: 20px; }
+            .chat-btn { bottom: calc(20px + env(safe-area-inset-bottom)); right: 20px; }
         }
 
-        /* --- Popup & Modal --- */
+        /* ==================== Prayer Popup Styles (STEP 2) ==================== */
         .popup-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.5); z-index: 2000;
-            display: none; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.2s ease;
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 2000;
+            display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease;
         }
         .popup-overlay.active { display: flex; opacity: 1; }
 
         .popup-content {
             background: #FFF8E1; width: 90%; max-width: 500px; height: 85vh; max-height: 700px;
-            border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             display: flex; flex-direction: column; overflow: hidden;
-            transform: scale(0.95); transition: transform 0.2s ease;
+            transform: scale(0.9); transition: transform 0.3s ease;
             position: relative;
         }
         .popup-overlay.active .popup-content { transform: scale(1); }
 
-        .popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #FFE0B2; padding: 15px; flex-shrink: 0; background: rgba(255,255,255,0.5); }
-        .popup-header h2 { margin: 0; font-size: 1.2rem; color: var(--main-node-color); }
+        .popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #FFE0B2; padding: 15px; flex-shrink: 0; background: rgba(255, 255, 255, 0.5); }
+        .popup-header h2 { margin: 0; font-size: 1.2rem; color: #8D6E63; }
         .close-btn { cursor: pointer; font-size: 2rem; border: none; background: none; color: #888; padding: 0 10px; }
 
-        /* --- Content Styles --- */
+        .name-container { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
+        .edit-name-btn { background: white; border: 1px solid #8D6E63; border-radius: 15px; padding: 5px 12px; cursor: pointer; color: #8D6E63; font-weight: bold; font-size: 0.8rem; transition: all 0.2s; }
+        .edit-name-btn:hover { background: #8D6E63; color: white; }
+        .color-trigger-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; transition: transform 0.2s; }
+        .color-trigger-btn:hover { transform: scale(1.1); }
+
+        #prayer-list { flex-grow: 1; overflow-y: auto; padding: 12px; background: #fff; -webkit-overflow-scrolling: touch; }
+
+        .prayer-card { background: #FFF; border-radius: 12px; padding: 14px; margin-bottom: 12px; border-left: 4px solid #FFCC80; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .prayer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.75rem; color: #8D6E63; }
+        .prayer-content { font-size: 0.95rem; line-height: 1.5; color: #3E2723; word-wrap: break-word; margin-bottom: 10px; }
+        .action-group { display: flex; gap: 12px; padding-top: 8px; border-top: 1px solid #FFF3E0; }
+        .text-btn { font-size: 0.85rem; background: none; border: none; cursor: pointer; color: #FF7043; font-weight: bold; padding: 4px 8px; transition: opacity 0.2s; }
+        .text-btn:hover { opacity: 0.7; } .text-btn:active { transform: scale(0.95); }
+
+        .reply-section { margin-top: 10px; background-color: #FFF8E1; border-radius: 8px; padding: 10px; }
+        .reply-item { font-size: 0.85rem; border-bottom: 1px dashed #FFE0B2; padding: 5px 0; color: #E65100; }
+        .reply-item:last-child { border-bottom: none; }
+
+        .prayer-input-area { padding: 12px; background: #fff; border-top: 2px solid #FFE0B2; flex-shrink: 0; }
+        .prayer-verse { background: #FFF8E1; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #5D4037; text-align: center; line-height: 1.4; }
+        .prayer-input-row { display: flex; gap: 8px; align-items: center; }
+        #new-prayer { flex: 1; padding: 10px 15px; border: 2px solid #FFE0B2; border-radius: 20px; font-size: 0.9rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
+        #new-prayer:focus { border-color: #8D6E63; }
+        .prayer-send-btn { width: 44px; height: 44px; border-radius: 50%; border: none; background: linear-gradient(135deg, #8D6E63, #6D4C41); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(141, 110, 99, 0.3); transition: transform 0.2s; }
+        .prayer-send-btn:hover { transform: scale(1.05); } .prayer-send-btn:active { transform: scale(0.95); }
+        .delete-member-btn { margin-top: 8px; background: transparent; color: #ef5350; border: 1px solid #ef5350; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; float: right;}
+        .delete-member-btn:hover { background: #ef5350; color: white; }
+
+        .admin-delete-btn { display: none !important; color: red !important; }
+        .admin-mode .admin-delete-btn { display: inline-block !important; }
+
+        @media (max-width: 768px) {
+            .popup-content { width: 95%; height: 90vh; border-radius: 20px 20px 0 0; }
+            #prayer-list { padding: 10px; }
+            .prayer-card { padding: 12px; margin-bottom: 10px; }
+            .prayer-input-area { padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+        }
+
+        /* --- Other Styles (Chat, etc) --- */
         .camp-img-container { margin-bottom: 20px; padding: 0 15px; }
         .camp-img-title { font-size: 1rem; font-weight: bold; color: #5D4037; margin-bottom: 10px; display: block; border-left: 5px solid #FF7043; padding-left: 10px; }
         .camp-image { width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; }
@@ -153,40 +176,10 @@
         .chat-sender { font-size: 0.75rem; color: #8D6E63; margin-bottom: 2px; margin-left: 5px; }
         .chat-input-area { padding: 10px; border-top: 2px solid #FFE0B2; display: flex; gap: 8px; background: #fff; align-items: center; }
         #chat-msg { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; font-size: 1rem; }
-        .chat-send-btn { 
-            background: var(--main-node-color); color: white; border: none; 
-            border-radius: 20px; padding: 0 20px; font-weight: bold; cursor: pointer; height: 40px;
-            white-space: nowrap; word-break: keep-all; min-width: 60px;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        /* --- Prayer Popup Content --- */
-        .name-container { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
-        .edit-name-btn { background: white; border: 1px solid var(--main-node-color); border-radius: 15px; padding: 5px 12px; cursor: pointer; color: var(--main-node-color); font-weight: bold; font-size: 0.8rem; }
-        .color-trigger-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; background-color: #E0F2F1; }
-        
-        #prayer-list { flex-grow: 1; overflow-y: auto; padding: 15px; background: #fff; }
-        
-        .prayer-card { background: #FFF; border-radius: 12px; padding: 14px; margin-bottom: 12px; border-left: 4px solid #FFCC80; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .prayer-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.75rem; color: #8D6E63; }
-        .prayer-content { font-size: 0.95rem; line-height: 1.5; color: #3E2723; }
-        .action-group { display: flex; gap: 12px; margin-top: 10px; border-top: 1px solid #FFF3E0; padding-top: 8px; }
-        .text-btn { font-size: 0.85rem; background: none; border: none; cursor: pointer; color: #FF7043; font-weight: bold; padding: 4px 8px;}
-        
-        .reply-section { margin-top: 10px; background-color: #FFF8E1; border-radius: 8px; padding: 10px; }
-        .reply-item { font-size: 0.85rem; border-bottom: 1px dashed #FFE0B2; padding: 5px 0; color: #E65100; }
-        
-        .prayer-input-area { padding: 12px; background: #fff; border-top: 2px solid #FFE0B2; flex-shrink: 0; }
-        .prayer-verse { background: #FFF8E1; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #5D4037; text-align: center; }
-        .prayer-input-row { display: flex; gap: 8px; align-items: center; }
-        #new-prayer { flex: 1; padding: 10px 15px; border: 2px solid #FFE0B2; border-radius: 20px; font-size: 0.9rem; }
-        .prayer-send-btn { width: 44px; height: 44px; border-radius: 50%; border: none; background: linear-gradient(135deg, #8D6E63, #6D4C41); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(141,110,99,0.3); }
-        .delete-member-btn { margin-top: 8px; background: transparent; color: #ef5350; border: 1px solid #ef5350; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 0.75rem; float: right; }
+        .chat-send-btn { background: var(--main-node-color); color: white; border: none; border-radius: 20px; padding: 0 20px; font-weight: bold; cursor: pointer; height: 40px; white-space: nowrap; min-width: 60px; display: flex; align-items: center; justify-content: center; }
         
         .admin-delete-chat { font-size: 0.7rem; color: red; cursor: pointer; margin-left: 5px; font-weight: bold; display: none; }
         .admin-mode .admin-delete-chat { display: inline-block; }
-        .admin-delete-btn { display: none !important; color: red !important; }
-        .admin-mode .admin-delete-btn { display: inline-block !important; }
 
         /* Lightbox & Modal */
         #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 3000; justify-content: center; align-items: center; }
@@ -210,7 +203,6 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { to { transform: scale(1); } }
         @keyframes pulse-red { 0% { transform: scale(0.9); } 50% { transform: scale(1.2); } 100% { transform: scale(0.9); } }
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
     </style>
 </head>
 <body id="body">
@@ -233,17 +225,16 @@
         <img id="lightbox-img" src="" alt="확대 이미지">
     </div>
 
+    <button class="admin-btn float-btn" id="admin-trigger" onclick="event.stopPropagation(); toggleAdminMode()" title="관리자 모드">🔒</button>
+    <button class="add-member-btn float-btn" onclick="event.stopPropagation(); addNewMember()" title="사람 추가">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </button>
+    
     <button class="chat-btn float-btn" onclick="event.stopPropagation(); toggleChatPopup()">
         💬
         <div id="chat-badge" class="chat-badge"></div>
     </button>
     
-    <button class="add-member-btn float-btn" onclick="event.stopPropagation(); addNewMember()" title="사람 추가">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-    </button>
-    
-    <button class="admin-btn float-btn" id="admin-trigger" onclick="event.stopPropagation(); toggleAdminMode()" title="관리자 모드">🔒</button>
-
     <div id="admin-modal" onclick="closeAdminModal(event)">
         <div class="admin-box" onclick="event.stopPropagation()">
             <h3 style="margin-top:0; color:#5D4037;">관리자 인증</h3>
@@ -292,12 +283,14 @@
             </div>
             <div class="chat-input-area">
                 <input type="text" id="chat-msg" placeholder="메시지를 입력하세요..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
-                <button class="chat-send-btn" onclick="sendChatMessage()">전송</button>
+                <button class="chat-send-btn" onclick="sendChatMessage()">
+                    <span style="font-size: 1.2rem;">📤</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="prayer-popup" class="popup-overlay" onclick="closePrayerPopup()">
+    <div id="prayer-popup" class="popup-overlay" onclick="event.target.id === 'prayer-popup' && closePrayerPopup()">
         <div class="popup-content" onclick="event.stopPropagation()">
             <div class="popup-header">
                 <div class="name-container">
@@ -309,7 +302,9 @@
             </div>
             <div id="prayer-list"></div>
             <div class="prayer-input-area">
-                <div class="prayer-verse">"두세 사람이 내 이름으로 모인 곳에는<br>나도 그들 중에 있느니라" (마 18:20)</div>
+                <div class="prayer-verse">
+                    "두세 사람이 내 이름으로 모인 곳에는<br>나도 그들 중에 있느니라" (마 18:20)
+                </div>
                 <div class="prayer-input-row">
                     <input type="text" id="new-prayer" placeholder="기도 제목을 입력하세요...">
                     <button class="prayer-send-btn" onclick="addPrayer()">
@@ -364,6 +359,15 @@
         let newMemberIds = new Set();
         let globalNodes = [];
         let simulation = null;
+
+        // [STEP 5: Touch Variables]
+        let touchStartTime = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isTouchMove = false;
+
+        // [STEP 3-A: Global Variables]
+        let currentMemberData = null;
 
         const brightColors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9", "#DCEDC8", "#F0F4C3", "#FFF9C4", "#FFECB3", "#FFE0B2", "#FFCCBC", "#D7CCC8", "#F5F5F5", "#CFD8DC"];
 
@@ -427,8 +431,8 @@
             })
             .catch(err => {
                 console.log("Firebase Load Error:", err);
-                document.getElementById('loading').classList.add('hide');
-                updateGraph();
+                document.getElementById('loading').classList.add('hide'); 
+                updateGraph(); 
             });
         }
         loadData();
@@ -494,10 +498,6 @@
         let link, node;
         let dragStartX, dragStartY;
         let isDragAction = false; 
-        let touchStartTime = 0;
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let isTouchMove = false;
 
         function updateGraph() {
             globalNodes = [centerNode, ...members];
@@ -522,52 +522,55 @@
             node = nodeGroup.selectAll("g").data(globalNodes, d => d.id);
             node.exit().remove();
 
+            // [STEP 4: Touch Logic Applied Here]
             const nodeEnter = node.enter().append("g")
                 .attr("cursor", "pointer")
                 .style("pointer-events", "all")
-                // 1. Touch Start
                 .on("touchstart", function(event, d) {
                     event.stopPropagation();
                     touchStartTime = Date.now();
                     touchStartX = event.touches[0].clientX;
                     touchStartY = event.touches[0].clientY;
                     isTouchMove = false;
-                    if (!event.active) simulation.alphaTarget(0.3).restart();
-                    d.fx = d.x; d.fy = d.y;
                 })
-                // 2. Touch Move
                 .on("touchmove", function(event, d) {
                     if (event.touches.length > 0) {
                         const dx = event.touches[0].clientX - touchStartX;
                         const dy = event.touches[0].clientY - touchStartY;
                         const distance = Math.sqrt(dx*dx + dy*dy);
-                        if (distance > 10) isTouchMove = true;
-                        d.fx = event.touches[0].clientX; 
-                        d.fy = event.touches[0].clientY;
+                        if (distance > 10) {
+                            isTouchMove = true;
+                        }
                     }
                 })
-                // 3. Touch End
                 .on("touchend", function(event, d) {
-                    if (!event.active) simulation.alphaTarget(0);
-                    d.fx = null; d.fy = null;
-                    const duration = Date.now() - touchStartTime;
-                    if (duration < 500 && !isTouchMove && d.type === 'member') {
-                        event.preventDefault(); 
-                        openPrayerPopup(d);
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    const touchDuration = Date.now() - touchStartTime;
+                    
+                    // 300ms 이내 + 이동 없음 = 탭
+                    if (touchDuration < 300 && !isTouchMove && d.type === 'member') {
+                        openPanel(d);
                     }
                 })
-                // 4. Mouse Click
                 .on("click", function(event, d) {
                     event.stopPropagation();
-                    if (!isDragAction && d.type === 'member') openPrayerPopup(d);
+                    
+                    // 드래그가 아닐 때만 열기
+                    if (typeof isDragAction !== 'undefined' && !isDragAction && d.type === 'member') {
+                        openPanel(d);
+                    } else if (d.type === 'member') {
+                        openPanel(d);
+                    }
                 })
-                // 5. Mouse Drag
                 .call(d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
                     .on("end", dragended));
 
             nodeEnter.append("circle").attr("stroke-width", 0).attr("r", 0)
+                .style("pointer-events", "all") // Enable touch
                 .style("will-change", "transform, filter")
                 .style("-webkit-filter", d => {
                     if (d.type === 'root') return "drop-shadow(0 0 15px #FFD54F)";
@@ -576,7 +579,6 @@
 
             nodeEnter.append("rect").attr("rx", 10).attr("ry", 10).attr("fill", "rgba(255, 255, 255, 0.7)").style("opacity", 0).style("pointer-events", "none");
             nodeEnter.append("text").attr("text-anchor", "middle").attr("dominant-baseline", "middle").attr("font-weight", "bold").style("pointer-events", "none").style("opacity", 0);
-            
             const badge = nodeEnter.append("g").attr("class", "node-badge").style("opacity", 0).style("pointer-events", "none");
             badge.append("circle").attr("r", 9).attr("cx", 0).attr("cy", 0).attr("fill", "#FF5252").attr("stroke", "#fff").attr("stroke-width", 2);
             badge.append("text").attr("x", 0).attr("y", 0).attr("dy", "0.35em").attr("text-anchor", "middle").attr("fill", "white").style("font-size", "11px").style("font-weight", "bold");
@@ -701,7 +703,7 @@
         window.addEventListener("resize", () => { const w = window.innerWidth; const h = window.innerHeight; svg.attr("width", w).attr("height", h); simulation.force("center", d3.forceCenter(w/2, h/2)); simulation.alpha(0.5).restart(); resizeWeatherCanvas(); });
 
         // --- Interaction Handlers ---
-        let currentMemberData = null;
+        // [STEP 3-B: Popup Functions]
         function toggleCampPopup() { document.getElementById('camp-popup').classList.toggle('active'); }
         function toggleChatPopup() { 
             const el = document.getElementById('chat-popup'); el.classList.toggle('active'); 
@@ -710,17 +712,92 @@
                 setTimeout(() => document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight, 100);
             }
         }
-        function openPrayerPopup(data) {
+        
+        function openPanel(data) {
+            console.log('Opening panel for:', data);
             currentMemberData = data;
-            newMemberIds.delete(data.id);
-            readStatus[data.id] = getTotalPrayerCount(data); 
-            updateNodeVisuals(); 
+            
+            // 새 멤버 표시 제거
+            if (typeof newMemberIds !== 'undefined') {
+                newMemberIds.delete(data.id);
+            }
+            
+            // 읽음 상태 업데이트
+            if (typeof readStatus !== 'undefined') {
+                readStatus[data.id] = getTotalPrayerCount(data);
+            }
+            
+            // 노드 비주얼 업데이트
+            if (typeof updateNodeVisuals === 'function') {
+                updateNodeVisuals();
+            }
+            
+            // UI 업데이트
             document.getElementById("panel-name").innerText = data.name;
-            document.getElementById("current-color-display").style.backgroundColor = data.color;
-            document.getElementById("prayer-popup").classList.add('active'); // Open Modal
+            document.getElementById("current-color-display").style.backgroundColor = data.color || "#E0F2F1";
+            
+            // 팝업 표시
+            document.getElementById("prayer-popup").classList.add('active');
+            
+            // 기도 목록 렌더링
             renderPrayers();
         }
-        function closePrayerPopup() { document.getElementById("prayer-popup").classList.remove('active'); currentMemberData = null; }
+
+        function closePrayerPopup() {
+            document.getElementById("prayer-popup").classList.remove('active');
+            currentMemberData = null;
+        }
+
+        function renderPrayers() {
+            const list = document.getElementById("prayer-list");
+            list.innerHTML = "";
+            
+            if (!currentMemberData || !currentMemberData.prayers || currentMemberData.prayers.length === 0) {
+                list.innerHTML = `
+                    <p style="text-align:center; margin:40px 20px; color:#888; font-size:0.9rem;">
+                        아직 등록된 기도 제목이 없습니다.<br>
+                        첫 번째 기도 제목을 나눠주세요! 🙏
+                    </p>
+                `;
+                return;
+            }
+            
+            currentMemberData.prayers.forEach((p, i) => {
+                const div = document.createElement("div");
+                div.className = "prayer-card";
+                
+                // HTML 이스케이프 함수 (XSS 방지) - 간략 버전
+                const escapeHtml = (text) => {
+                    const d = document.createElement('div');
+                    d.textContent = text;
+                    return d.innerHTML;
+                };
+
+                const replies = p.replies ? 
+                    `<div class="reply-section">
+                        ${p.replies.map(r => `<div class="reply-item">💬 ${escapeHtml(r.content)}</div>`).join('')}
+                    </div>` : "";
+                
+                const delBtn = (typeof isAdmin !== 'undefined' && isAdmin) ? 
+                    `<button class="text-btn admin-delete-btn" onclick="adminDeletePrayer(${i})" style="color:red;">강제삭제</button>` : 
+                    `<button class="text-btn" onclick="deletePrayer(${i})">삭제</button>`;
+                
+                div.innerHTML = `
+                    <div class="prayer-header">
+                        <span>📅 ${p.date}</span>
+                    </div>
+                    <div class="prayer-content">${escapeHtml(p.content)}</div>
+                    <div class="action-group">
+                        <button class="text-btn" onclick="editPrayer(${i})">✏️ 수정</button>
+                        ${delBtn}
+                        <button class="text-btn" onclick="addReply(${i})">💬 답글</button>
+                    </div>
+                    ${replies}
+                `;
+                
+                list.appendChild(div);
+            });
+        }
         
         // Color Picker
         function openColorModal() {
@@ -750,31 +827,72 @@
         function addNewMember() { const n = prompt("이름:"); if(n && n.trim()) { if(containsBannedWords(n)) return alert("부적절한 이름"); membersRef.push({id:`member_${Date.now()}`, name:n.trim(), type:"member", color:getRandomColor(), prayers:[], rotation:0, rotationDirection:1}); } }
         function updateMemberColor(v) { if(currentMemberData) membersRef.child(currentMemberData.firebaseKey).update({color: v}); }
         function deleteMember() { if(currentMemberData && confirm("삭제하시겠습니까?")) { membersRef.child(currentMemberData.firebaseKey).remove(); closePrayerPopup(); }}
-        function editProfile() { 
+        
+        // 프로필 편집
+        function editProfile() {
             if (!currentMemberData) return;
+            
             const newName = prompt("이름 수정:", currentMemberData.name);
+            
             if (newName !== null) {
-                const newPhoto = prompt("프로필 사진 URL (비워두면 기본):", currentMemberData.photoUrl || "");
-                if (containsBannedWords(newName)) return alert("부적절한 단어");
+                const newPhoto = prompt(
+                    "프로필 사진 URL (비워두면 기본):", 
+                    currentMemberData.photoUrl || ""
+                );
+                
+                if (typeof containsBannedWords === 'function' && containsBannedWords(newName)) {
+                    alert("부적절한 단어가 포함되어 있습니다.");
+                    return;
+                }
+                
                 const updates = { name: newName.trim() };
-                if (newPhoto !== null) updates.photoUrl = newPhoto.trim();
-                membersRef.child(currentMemberData.firebaseKey).update(updates);
+                
+                if (newPhoto !== null) {
+                    updates.photoUrl = newPhoto.trim();
+                }
+                
+                if (typeof membersRef !== 'undefined') {
+                    membersRef.child(currentMemberData.firebaseKey).update(updates);
+                }
+                
                 document.getElementById("panel-name").innerText = newName.trim();
             }
         }
 
-        function renderPrayers() {
-            const list = document.getElementById("prayer-list"); list.innerHTML = "";
-            if(!currentMemberData || !currentMemberData.prayers) { list.innerHTML = "<p style='text-align:center; margin:40px 20px; color:#888; font-size:0.9rem;'>아직 등록된 기도 제목이 없습니다.<br>첫 번째 기도 제목을 나눠주세요! 🙏</p>"; return; }
-            currentMemberData.prayers.forEach((p, i) => {
-                const div = document.createElement("div"); div.className = "prayer-card";
-                const replies = p.replies ? `<div class="reply-section">${p.replies.map(r=>`<div class="reply-item">💬 ${r.content}</div>`).join('')}</div>` : "";
-                const delBtn = isAdmin ? `<button class="text-btn admin-delete-btn" onclick="adminDeletePrayer(${i})">강제삭제</button>` : `<button class="text-btn" onclick="deletePrayer(${i})">삭제</button>`;
-                div.innerHTML = `<div class="prayer-header"><span>📅 ${p.date}</span></div><div class="prayer-content">${p.content}</div><div class="action-group"><button class="text-btn" onclick="editPrayer(${i})">수정</button>${delBtn}<button class="text-btn" onclick="addReply(${i})">답글</button></div>${replies}`;
-                list.appendChild(div);
+        // 기도 제목 추가
+        function addPrayer() {
+            if (!currentMemberData) {
+                alert("멤버 데이터를 찾을 수 없습니다.");
+                return;
+            }
+            
+            const input = document.getElementById("new-prayer");
+            const content = input.value.trim();
+            
+            if (!content) {
+                return;
+            }
+            
+            // 금지어 체크
+            if (typeof containsBannedWords === 'function' && containsBannedWords(content)) {
+                alert("부적절한 내용이 포함되어 있습니다.");
+                return;
+            }
+            
+            const prayers = currentMemberData.prayers || [];
+            prayers.unshift({
+                content: content,
+                date: new Date().toISOString().split('T')[0]
             });
+            
+            // Firebase 업데이트
+            if (typeof membersRef !== 'undefined') {
+                membersRef.child(currentMemberData.firebaseKey).update({ prayers: prayers });
+            }
+            
+            input.value = "";
         }
-        function addPrayer() { const v = document.getElementById("new-prayer").value.trim(); if(v) { if(containsBannedWords(v)) return alert("부적절한 내용"); const p = currentMemberData.prayers||[]; p.unshift({content:v, date:new Date().toISOString().split('T')[0]}); membersRef.child(currentMemberData.firebaseKey).update({prayers:p}); document.getElementById("new-prayer").value=""; } }
+
         function editPrayer(i) { const v = prompt("수정:", currentMemberData.prayers[i].content); if(v) { if(containsBannedWords(v)) return alert("부적절한 내용"); currentMemberData.prayers[i].content = v; membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); } }
         function deletePrayer(i) { if(confirm("삭제?")) { currentMemberData.prayers.splice(i,1); membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); } }
         function adminDeletePrayer(i) { if(confirm("관리자 강제 삭제?")) { currentMemberData.prayers.splice(i,1); membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); } }
