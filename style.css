@@ -241,9 +241,10 @@ body {
 
 /* --- D3 Link & Node Styles --- */
 .links line {
-    stroke: #FFFFFF !important;  
-    stroke-width: 2px;          
-    stroke-opacity: 0.8;         
+    stroke: #FFFFFF !important;       /* 흰색 */
+    stroke-width: 3px !important;     /* 선을 2px -> 3px로 더 굵게 */
+    stroke-opacity: 1 !important;     /* 투명도 없이 진하게 */
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); /* 핵심: 그림자 추가 */
     pointer-events: none;
 }
 
