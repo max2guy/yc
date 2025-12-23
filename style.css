@@ -241,12 +241,13 @@ body {
 
 /* --- D3 Link & Node Styles --- */
 .links line {
-    stroke: #D7CCC8; /* 선 색깔 (은은한 갈색) */
-    stroke-width: 2px; /* 선 두께 */
-    stroke-opacity: 0.5; /* 선 투명도 (반투명) */
-    pointer-events: none; /* 선이 클릭을 방해하지 않게 */
+    stroke: #FFFFFF !important;  
+    stroke-width: 2px;          
+    stroke-opacity: 0.8;         
+    pointer-events: none;
 }
 
+/* 노드 상호작용 스타일 */
 .nodes g {
     cursor: pointer;
     transition: opacity 0.3s;
