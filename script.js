@@ -1,4 +1,8 @@
-// 1. 기본 설정 및 서비스 워커
+// ==========================================
+// 연천장로교회 청년부 기도 네트워크 (Final)
+// ==========================================
+
+// 1. 기본 설정 및 서비스 워커 (앱 설치 지원)
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(function(registration) {
         registration.addEventListener('updatefound', () => {
@@ -12,6 +16,7 @@ if ('serviceWorker' in navigator) {
     }, function(err) { console.log('SW Fail: ', err); });
 }
 
+// UI 핸들러: 메뉴 및 팝업 닫기
 let isFabOpen = false;
 function toggleFabMenu() {
     isFabOpen = !isFabOpen;
@@ -59,6 +64,7 @@ const onlineRef = database.ref('.info/connected');
 const presenceRef = database.ref('presence');
 const messagesRef = database.ref('messages');
 
+// 사용자 세션 관리
 let mySessionId = localStorage.getItem('mySessionId');
 if (!mySessionId) {
     mySessionId = 'user_' + Date.now();
@@ -83,7 +89,7 @@ let dragStartY = 0;
 let isDragAction = false;
 const brightColors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9", "#DCEDC8", "#F0F4C3", "#FFF9C4", "#FFECB3", "#FFE0B2", "#FFCCBC", "#D7CCC8", "#F5F5F5", "#CFD8DC"];
 
-// 4. Firebase 리스너
+// 4. Firebase 리스너 (접속자 수 등)
 onlineRef.on('value', (snapshot) => {
     if (snapshot.val()) { 
         const con = presenceRef.push();
@@ -99,7 +105,7 @@ presenceRef.on('value', (snapshot) => {
 const bannedWords = ["욕설", "비속어", "시발", "씨발", "개새끼", "병신", "지랄", "존나", "졸라", "미친", "성매매", "섹스", "야동", "조건만남", "주식", "코인", "비트코인", "투자", "리딩방", "수익", "바보", "멍청이"];
 function containsBannedWords(text) { return bannedWords.some(word => text.includes(word)); }
 
-// [중요] 관리자 인증 상태 체크
+// 관리자 인증 상태 감지
 firebase.auth().onAuthStateChanged((user) => {
     if (user) {
         isAdmin = true;
@@ -112,6 +118,7 @@ firebase.auth().onAuthStateChanged((user) => {
     }
 });
 
+// 데이터 로드
 let centerNode = { id: "center", name: "연천장로교회\n청년부\n함께 기도해요", type: "root", icon: "✝️", color: "#FFF8E1" };
 let members = [];
 let isDataLoaded = false;
@@ -152,6 +159,7 @@ function loadData() {
 }
 loadData();
 
+// 실시간 데이터 동기화
 membersRef.on('child_added', (snap) => {
     if(!isDataLoaded) return;
     const val = snap.val();
@@ -194,7 +202,7 @@ membersRef.on('child_removed', (snap) => {
     }
 });
 
-// 5. D3 시각화 설정 (선 그리기 수정됨)
+// 5. D3 시각화 (업데이트된 디자인 적용)
 const width = window.innerWidth;
 const height = window.innerHeight;
 const svg = d3.select("#visualization").append("svg").attr("width", width).attr("height", height);
@@ -206,14 +214,20 @@ const linkGroup = g.append("g").attr("class", "links");
 const nodeGroup = g.append("g").attr("class", "nodes");
 const sizeScale = d3.scaleSqrt().domain([0, 15]).range([28, 60]).clamp(true);
 
-simulation = d3.forceSimulation().force("link", d3.forceLink().id(d => d.id).distance(140)).force("charge", d3.forceManyBody().strength(-400)).force("center", d3.forceCenter(width / 2, height / 2)).force("collide", d3.forceCollide().radius(d => calculateRadius(d) + 30));
+simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(d => d.id).distance(140))
+    .force("charge", d3.forceManyBody().strength(-400))
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("collide", d3.forceCollide().radius(d => calculateRadius(d) + 30));
 
 let link, node;
 
+// ★ 그래프 업데이트 함수 (선 디자인 및 타이밍 수정됨) ★
 function updateGraph() {
     globalNodes = [centerNode, ...members];
     const links = members.map(m => ({ source: centerNode.id, target: m.id }));
 
+    // 1. 패턴(이미지) 업데이트
     const patterns = defs.selectAll("pattern").data(members, d => d.id);
     patterns.enter().append("pattern")
         .attr("id", d => "img-" + d.id).attr("width", 1).attr("height", 1).attr("patternContentUnits", "objectBoundingBox")
@@ -221,18 +235,26 @@ function updateGraph() {
     patterns.select("image").attr("xlink:href", d => d.photoUrl);
     patterns.exit().remove();
 
+    // 2. 선(Link) 업데이트
     link = linkGroup.selectAll("line").data(links, d => d.target.id || d.target);
     link.exit().remove();
     
-    // [해결] 선이 안 보이는 문제: 자바스크립트에서 직접 스타일을 강력하게 적용
+    // [디자인 수정] 1.5px 두께, 은은한 흰색, 지연 효과
     const linkEnter = link.enter().append("line")
-        .attr("stroke", "#FFFFFF")     // 흰색
-        .attr("stroke-width", 3)       // 3px 두께 (잘 보이게)
-        .style("opacity", 0.9)         // 90% 불투명
-        .style("filter", "drop-shadow(0 1px 3px rgba(0,0,0,0.5))"); // 그림자를 줘서 배경과 분리
+        .attr("stroke", "#FFFFFF")      // 흰색 빛
+        .attr("stroke-width", 1.5)      // 얇고 세련되게
+        .style("opacity", 0)            // 처음엔 투명하게 시작
+        .style("filter", "drop-shadow(0 1px 2px rgba(0,0,0,0.2))");
+    
+    // [애니메이션] 얼굴이 다 나온 뒤에 스르륵 나타남
+    linkEnter.transition()
+        .delay(800)                     
+        .duration(1500)                 
+        .style("opacity", 0.6);         // 60% 밝기로 은은하게
     
     link = linkEnter.merge(link);
 
+    // 3. 노드(얼굴) 업데이트
     node = nodeGroup.selectAll("g").data(globalNodes, d => d.id);
     node.exit().remove();
 
@@ -535,14 +557,14 @@ function renderPrayers() {
     });
 }
 
-// [해결] 실시간 삭제 기능 개선
+// [해결] 실시간 삭제 기능 개선 (Optimistic UI)
 function deletePrayer(i) {
     if(confirm("정말 삭제하시겠습니까?")) {
-        // 1. 화면에서 즉시 제거 (사용자에게 빠름을 느끼게 함)
+        // 1. 화면에서 즉시 제거
         currentMemberData.prayers.splice(i, 1);
         renderPrayers(); 
         
-        // 2. 서버에 업데이트 (빈 배열 처리 포함)
+        // 2. 서버에 업데이트
         const updateData = currentMemberData.prayers.length > 0 ? currentMemberData.prayers : [];
         membersRef.child(currentMemberData.firebaseKey).update({prayers: updateData});
     }
@@ -701,7 +723,7 @@ function gameLoop(timestamp) {
         });
         node.attr("transform", d => `translate(${d.x},${d.y}) rotate(${d.rotation || 0})`);
         
-        // [중요] 선 업데이트 위치
+        // 선 업데이트
         if(link) {
             link.attr("x1", d => d.source.x)
                 .attr("y1", d => d.source.y)
