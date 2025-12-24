@@ -81,7 +81,7 @@ body {
 .popup-header h2 { margin: 0; font-size: 1.2rem; color: #8D6E63; }
 .close-btn { cursor: pointer; font-size: 2rem; border: none; background: none; color: #888; padding: 0 10px; }
 
-/* --- 기도 나눔 카드 디자인 --- */
+/* --- 기도 나눔 카드 디자인 (Overlap Fix) --- */
 #prayer-list { flex-grow: 1; overflow-y: auto; padding: 12px; background: #fff; -webkit-overflow-scrolling: touch; }
 .prayer-card { 
     background: #FFF; border-radius: 12px; padding: 14px; margin-bottom: 12px; 
@@ -90,19 +90,20 @@ body {
 }
 @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* 카드 상단 헤더 정렬 */
-.prayer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.75rem; color: #8D6E63; }
+/* 카드 상단 헤더: Flexbox로 겹침 방지 */
+.prayer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.75rem; color: #8D6E63; position: relative; }
 .prayer-content { font-size: 0.95rem; line-height: 1.5; color: #3E2723; word-wrap: break-word; margin-bottom: 10px; padding-right: 10px; }
 .action-group { display: flex; justify-content: flex-start; align-items: center; padding-top: 10px; border-top: 1px solid #FFF3E0; }
 
-/* --- 더보기 메뉴(···) 스타일 --- */
-.more-btn { border: none; background: none; color: #8D6E63; font-size: 1.5rem; font-weight: bold; cursor: pointer; padding: 0 5px; line-height: 1; z-index: 10; }
+/* --- 더보기 메뉴(···) 스타일 (Overlap Fix) --- */
+.more-wrapper { position: relative; display: inline-block; }
+.more-btn { border: none; background: none; color: #8D6E63; font-size: 1.5rem; font-weight: bold; cursor: pointer; padding: 0 8px; line-height: 1; }
 .more-options {
-    position: absolute; right: 10px; top: 35px; background: white; border: 1px solid #FFE0B2; border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.15); display: none; flex-direction: column; z-index: 500; overflow: hidden; min-width: 120px;
+    position: absolute; right: 0; top: 30px; background: white; border: 1px solid #FFE0B2; border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15); display: none; flex-direction: column; z-index: 1000; overflow: hidden; min-width: 120px;
 }
 .more-options.active { display: flex; }
-.opt-btn { border: none; background: none; padding: 12px 15px; font-size: 0.9rem; color: #5D4037; cursor: pointer; text-align: left; transition: background 0.2s; }
+.opt-btn { border: none; background: none; padding: 12px 15px; font-size: 0.9rem; color: #5D4037; cursor: pointer; text-align: left; transition: background 0.2s; white-space: nowrap; }
 .opt-btn:hover { background-color: #FFF3E0; }
 .opt-btn.del-opt { color: #ef5350; border-top: 1px solid #FFF3E0; }
 
@@ -111,7 +112,7 @@ body {
 .reply-section { margin-top: 10px; background-color: #FFF8E1; border-radius: 8px; padding: 10px; }
 .reply-item { font-size: 0.85rem; border-bottom: 1px dashed #FFE0B2; padding: 6px 0; color: #E65100; display: flex; justify-content: space-between; align-items: center; }
 .reply-item:last-child { border-bottom: none; }
-.r-del-btn { border: none; background: none; color: #aaa; cursor: pointer; font-size: 1.2rem; padding: 0 5px; line-height: 1; }
+.r-del-btn { border: none; background: none; color: #aaa; cursor: pointer; font-size: 1.2rem; padding: 0 8px; line-height: 1; }
 
 /* --- 프로필 및 설정 디자인 --- */
 .profile-upload-container { display: flex; flex-direction: column; align-items: center; margin: 10px 0; }
@@ -136,5 +137,5 @@ input:checked + .slider:before { transform: translateX(22px); }
 /* --- 애니메이션 효과 --- */
 .prayer-card.pinned { background-color: #FFFDE7; border: 2px solid #FFD54F; border-left: 6px solid #FFC107; }
 .pinned-icon { margin-right: 6px; font-size: 1.1rem; color: #FF8F00; vertical-align: middle; }
-.system-toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #333; color: white; padding: 12px 24px; border-radius: 30px; z-index: 10000; transition: transform 0.4s; opacity: 0; pointer-events: none; }
+.system-toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #333; color: white; padding: 12px 24px; border-radius: 30px; z-index: 10000; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: transform 0.4s; opacity: 0; pointer-events: none; }
 .system-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
