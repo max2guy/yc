@@ -1,11 +1,10 @@
 // ==========================================
-// 연천장로교회 청년부 기도 네트워크 (Notification Fix)
+// 연천장로교회 청년부 기도 네트워크 (Final Fix)
 // ==========================================
 
-// 1. 기본 설정 및 서비스 워커
+// 1. 서비스 워커 등록
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(function(registration) {
-        console.log('Service Worker Registered');
         registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             newWorker.addEventListener('statechange', () => {
@@ -14,10 +13,10 @@ if ('serviceWorker' in navigator) {
                 }
             });
         });
-    });
+    }, function(err) { console.log('SW Fail: ', err); });
 }
 
-// PWA 설치 프롬프트
+// PWA 설치 버튼 로직
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
@@ -110,7 +109,7 @@ const brightColors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#B
 // 마지막 채팅 읽은 시간
 let lastChatReadTime = Number(localStorage.getItem('lastChatReadTime')) || Date.now();
 
-// 권한 확인
+// 알림 권한 요청 (앱 실행 시)
 function checkNotificationPermission() {
     if (!("Notification" in window)) return;
     if (Notification.permission !== "denied" && Notification.permission !== "granted") {
@@ -119,6 +118,7 @@ function checkNotificationPermission() {
 }
 checkNotificationPermission();
 
+// 앱 아이콘 배지 설정
 function setAppBadge(count) {
     if ('setAppBadge' in navigator) {
         if (count > 0) navigator.setAppBadge(count).catch(e=>console.log(e));
@@ -225,10 +225,12 @@ function loadData() {
         const cData = cSnap.val();
         if (mData) members = Object.keys(mData).map(key => ({ firebaseKey: key, ...mData[key] }));
         if(cData && cData.icon) centerNode.icon = cData.icon;
+        
         members.forEach(m => {
             if(!m.rotationDirection) m.rotationDirection = Math.random() < 0.5 ? 1 : -1;
             if(m.rotation === undefined) m.rotation = 0;
         });
+
         isDataLoaded = true;
         document.getElementById('loading').classList.add('hide');
         updateGraph(); 
@@ -618,25 +620,24 @@ function sendChatMessage() { const t = document.getElementById("chat-msg").value
 function deleteChatMessage(k) { if(confirm("관리자 삭제?")) messagesRef.child(k).remove(); }
 
 // ==========================================
-// ★ [수정] 메시지 수신 시 서비스 워커로 알림 요청
+// ★ [수정됨] 갤럭시/안드로이드 앱 알림 로직
 // ==========================================
 messagesRef.limitToLast(50).on('child_added', snap => {
     const d = snap.val();
     
-    // 내가 보낸 게 아니고, 마지막 읽은 시간 이후에 온 메시지라면
+    // 메시지가 내가 보낸 게 아니고, 접속 이후에 온 것이라면
     if (d.timestamp > lastChatReadTime && d.senderId !== mySessionId) {
         unreadChatKeys.add(snap.key);
         const popup = document.getElementById('chat-popup');
         
-        // 채팅창이 닫혀있다면 배지 & 알림 실행
         if (!popup.classList.contains('active')) {
-            // 1. 내부 빨간 점
+            // 1. 내부 빨간 점 배지
             document.getElementById('chat-badge').classList.add('active'); 
-            // 2. 앱 아이콘 숫자
+            // 2. 앱 아이콘 숫자 배지
             setAppBadge(unreadChatKeys.size); 
             
-            // 3. ★ [핵심] 서비스 워커에게 알림 요청 (갤럭시 배지 트리거)
-            if (document.hidden && Notification.permission === "granted") {
+            // 3. ★ [핵심] 서비스 워커에게 '알림 보여줘!' 요청하기
+            if (document.hidden && Notification.permission === "granted" && 'serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(function(registration) {
                     registration.showNotification("새로운 기도/채팅 메시지", {
                         body: d.text,
