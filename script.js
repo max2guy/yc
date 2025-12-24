@@ -1,5 +1,5 @@
 // ==========================================
-// 연천장로교회 청년부 기도 네트워크 (Final v7 - Notification Toggle)
+// 연천장로교회 청년부 기도 네트워크 (Final v8 - Reply Delete)
 // ==========================================
 
 // 1. 서비스 워커 등록
@@ -93,8 +93,8 @@ let isAdmin = false;
 let isFirstRender = true;
 let readStatus = JSON.parse(localStorage.getItem('readStatus')) || {};
 
-// ★ [신규] 알림 설정 상태 (기본값: 꺼짐 false)
-let isNotiEnabled = localStorage.getItem('isNotiEnabled') === 'true';
+// 알림 설정 상태 (기본값: 켜짐 true) - 아까 만드신 토글 기능 유지
+let isNotiEnabled = localStorage.getItem('isNotiEnabled') !== 'false'; 
 
 let newMemberIds = new Set();
 let globalNodes = [];
@@ -112,28 +112,20 @@ const brightColors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#B
 
 let lastChatReadTime = Number(localStorage.getItem('lastChatReadTime')) || Date.now();
 
-// ==========================================
-// ★ [핵심] 알림 토글 기능 (켜기/끄기)
-// ==========================================
+// 알림 토글 기능
 function toggleNotification() {
-    // 1. 현재 켜져있다면 -> 끄기
     if (isNotiEnabled) {
         isNotiEnabled = false;
         localStorage.setItem('isNotiEnabled', 'false');
         updateNotiButtonUI();
         alert("알림이 해제되었습니다. 🔕");
-    } 
-    // 2. 현재 꺼져있다면 -> 켜기 (권한 확인 필요)
-    else {
+    } else {
         if (!("Notification" in window)) {
             return alert("이 기기는 알림을 지원하지 않습니다.");
         }
-        
         if (Notification.permission === "granted") {
-            // 이미 권한 있으면 바로 켜기
             enableNotification();
         } else if (Notification.permission !== "denied") {
-            // 권한 없으면 요청
             Notification.requestPermission().then(permission => {
                 if (permission === "granted") enableNotification();
                 else alert("알림 권한이 거부되었습니다.");
@@ -148,8 +140,6 @@ function enableNotification() {
     isNotiEnabled = true;
     localStorage.setItem('isNotiEnabled', 'true');
     updateNotiButtonUI();
-    
-    // 테스트 알림
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(reg => {
             reg.showNotification("알림 설정 완료!", {
@@ -161,25 +151,20 @@ function enableNotification() {
     }
 }
 
-// 버튼 모양 업데이트 함수
 function updateNotiButtonUI() {
     const btn = document.getElementById('noti-btn');
     if (!btn) return;
-    
     if (isNotiEnabled) {
         btn.innerText = "🔕 알림 끄기";
-        btn.style.backgroundColor = "#FFCDD2"; // 붉은색 계열 (끄기 유도)
+        btn.style.backgroundColor = "#FFCDD2";
         btn.style.borderColor = "#EF9A9A";
     } else {
         btn.innerText = "🔔 알림 켜기";
-        btn.style.backgroundColor = "#FFF3E0"; // 노란색 계열 (켜기 유도)
+        btn.style.backgroundColor = "#FFF3E0";
         btn.style.borderColor = "#FF9800";
     }
 }
-
-// 초기 로딩 시 버튼 상태 동기화
 setTimeout(updateNotiButtonUI, 500);
-
 
 function setAppBadge(count) {
     if ('setAppBadge' in navigator) {
@@ -188,7 +173,6 @@ function setAppBadge(count) {
     }
 }
 
-// IP 추적 및 강제 퇴장
 async function getMyIp() {
     try {
         const response = await fetch('https://api.ipify.org?format=json');
@@ -318,7 +302,6 @@ membersRef.on('child_added', (snap) => {
     }
 });
 
-// 기도제목/답글 알림 (isNotiEnabled 체크 추가)
 membersRef.on('child_changed', (snap) => {
     if(!isDataLoaded) return;
     const val = snap.val();
@@ -334,7 +317,6 @@ membersRef.on('child_changed', (snap) => {
         const oldTotal = getCount(oldMember);
         const newTotal = getCount(val);
 
-        // ★ [수정] 사용자가 알림을 켰을 때만(isNotiEnabled) 알림 발송
         if (!isFirstRender && newTotal > oldTotal && isNotiEnabled) {
              if (document.hidden && Notification.permission === "granted" && 'serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(reg => {
@@ -373,7 +355,6 @@ membersRef.on('child_removed', (snap) => {
     }
 });
 
-// D3 시각화
 const width = window.innerWidth;
 const height = window.innerHeight;
 const svg = d3.select("#visualization").append("svg").attr("width", width).attr("height", height);
@@ -573,7 +554,6 @@ function toggleChatPopup() {
         lastChatReadTime = Date.now();
         localStorage.setItem('lastChatReadTime', lastChatReadTime);
         
-        // 권한 있으면 버튼 숨김
         if (Notification.permission === "granted") {
             const btn = document.getElementById('noti-btn');
             if(btn) btn.style.display = 'none';
@@ -587,7 +567,7 @@ function openPrayerPopup(data) {
     currentMemberData = data;
     newMemberIds.delete(data.id);
     
-    // ★ [수정] 읽음 처리 후 즉시 로컬 저장소에 저장 (새로고침 시 숫자 유지)
+    // 읽음 상태 저장 (숫자 배지 초기화 방지)
     readStatus[data.id] = getTotalPrayerCount(data); 
     localStorage.setItem('readStatus', JSON.stringify(readStatus));
 
@@ -682,7 +662,7 @@ function saveProfileChanges() {
 function createSafeElement(tag, className, text) { const el = document.createElement(tag); if (className) el.className = className; if (text) el.textContent = text; return el; }
 
 // ==========================================
-// [수정] 기도제목 렌더링 함수 (고정 기능 + 아이콘)
+// [수정] 기도제목 렌더링 함수 (답글 삭제 기능 추가)
 // ==========================================
 function renderPrayers() {
     const list = document.getElementById("prayer-list"); 
@@ -708,22 +688,19 @@ function renderPrayers() {
     displayList.forEach((p) => {
         const i = p.originalIndex;
         const div = createSafeElement("div", "prayer-card");
-        if (p.isPinned) div.classList.add("pinned"); // 스타일용 클래스 추가
+        if (p.isPinned) div.classList.add("pinned"); 
 
         const header = createSafeElement("div", "prayer-header");
         
-        // [핵심 수정] 날짜와 아이콘을 담을 래퍼(Wrapper) 생성
         const dateWrapper = createSafeElement("div");
         dateWrapper.style.display = "flex";
         dateWrapper.style.alignItems = "center";
 
-        // 고정된 글이면 아이콘 span 추가
         if (p.isPinned) {
             const pinIcon = createSafeElement("span", "pinned-icon", "📌");
             dateWrapper.appendChild(pinIcon);
         }
 
-        // 날짜 span 추가
         const dateSpan = createSafeElement("span", "", p.date);
         dateWrapper.appendChild(dateSpan);
         
@@ -735,7 +712,6 @@ function renderPrayers() {
         let delBtnHtml = `<button class="text-btn" onclick="deletePrayer(${i})">삭제</button>`;
         if(isAdmin) delBtnHtml = `<button class="text-btn admin-delete-btn" onclick="adminDeletePrayer(${i})">강제삭제</button>`;
         
-        // 고정/해제 버튼 라벨
         const pinLabel = p.isPinned ? "해제" : "고정";
         
         actionGroup.innerHTML = `
@@ -749,10 +725,30 @@ function renderPrayers() {
         div.appendChild(content); 
         div.appendChild(actionGroup);
 
+        // ★ [수정됨] 답글 렌더링 + 삭제 버튼 추가
         if (p.replies) {
             const replySection = createSafeElement("div", "reply-section");
-            p.replies.forEach(r => { 
-                const rItem = createSafeElement("div", "reply-item", "💬 " + r.content); 
+            p.replies.forEach((r, rIdx) => { 
+                const rItem = createSafeElement("div", "reply-item");
+                rItem.style.display = "flex";
+                rItem.style.justifyContent = "space-between";
+                
+                const textSpan = createSafeElement("span", "", "💬 " + r.content);
+                textSpan.style.flex = "1";
+                
+                // 삭제 버튼
+                const delBtn = document.createElement("button");
+                delBtn.innerHTML = "&times;"; // X 모양
+                delBtn.style.border = "none";
+                delBtn.style.background = "none";
+                delBtn.style.color = "#aaa";
+                delBtn.style.cursor = "pointer";
+                delBtn.style.fontSize = "1.2rem";
+                delBtn.style.padding = "0 0 0 10px";
+                delBtn.onclick = function() { deleteReply(i, rIdx); };
+                
+                rItem.appendChild(textSpan);
+                rItem.appendChild(delBtn);
                 replySection.appendChild(rItem); 
             });
             div.appendChild(replySection);
@@ -762,20 +758,23 @@ function renderPrayers() {
 }
 
 // ==========================================
-// [신규] 게시글 고정/해제 토글 함수
+// [신규] 답글 삭제 함수
 // ==========================================
+function deleteReply(prayerIdx, replyIdx) {
+    if(confirm("이 답글을 삭제하시겠습니까?")) {
+        currentMemberData.prayers[prayerIdx].replies.splice(replyIdx, 1);
+        membersRef.child(currentMemberData.firebaseKey).update({prayers: currentMemberData.prayers})
+        .then(() => renderPrayers());
+    }
+}
+
 function togglePin(index) {
     if (!currentMemberData) return;
-    
-    // 현재 상태 반대로 뒤집기 (true <-> false)
     const currentState = currentMemberData.prayers[index].isPinned || false;
     currentMemberData.prayers[index].isPinned = !currentState;
-
-    // DB에 저장
     membersRef.child(currentMemberData.firebaseKey).update({
         prayers: currentMemberData.prayers
     }).then(() => {
-        // 화면 즉시 갱신
         renderPrayers();
     });
 }
@@ -790,7 +789,7 @@ function sendChatMessage() { const t = document.getElementById("chat-msg").value
 function deleteChatMessage(k) { if(confirm("관리자 삭제?")) messagesRef.child(k).remove(); }
 
 // ==========================================
-// ★ [수정됨] 메시지 수신 시 알림 + 토글 체크
+// ★ [수정됨] 갤럭시/안드로이드 앱 알림 로직
 // ==========================================
 messagesRef.limitToLast(50).on('child_added', snap => {
     const d = snap.val();
