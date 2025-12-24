@@ -1,52 +1,61 @@
-:root { --bg-gradient: radial-gradient(circle, #FFFCF2 0%, #FFF3E0 100%); --main: #8D6E63; --accent: #FF7043; }
-body { margin:0; background:var(--bg-gradient); font-family:'Pretendard', sans-serif; overflow:hidden; touch-action:none; user-select:none; }
+:root { --bg: radial-gradient(circle, #FFFCF2 0%, #FFF3E0 100%); --brown: #5D4037; --orange: #FF7043; }
+body { margin:0; background:var(--bg); font-family:'Pretendard', sans-serif; overflow:hidden; touch-action:none; user-select:none; color:var(--brown); }
+
+/* 필수 레이아웃 */
 #visualization { width:100vw; height:100dvh; position:relative; z-index:10; }
 #weather-canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5; }
-
-/* 로딩 */
-#loading { position:fixed; inset:0; background:#FFF3E0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; transition:opacity 0.5s; }
+#loading { position:fixed; inset:0; background:#FFF3E0; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.5s; }
 #loading.hide { opacity:0; pointer-events:none; }
-.spinner { width:50px; height:50px; border:5px solid #FFE0B2; border-top-color:#FF7043; border-radius:50%; animation:spin 1s infinite; }
+.spinner { width:40px; height:40px; border:4px solid #FFE0B2; border-top-color:var(--orange); border-radius:50%; animation:spin 1s infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 
-/* UI 요소 */
-.top-ui-common { position:fixed; z-index:100; background:rgba(255,255,255,0.9); padding:8px 15px; border-radius:20px; font-weight:bold; color:#5D4037; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-.camp-btn { top:30px; left:20px; border:none; }
-.online-counter { top:30px; right:20px; display:flex; align-items:center; gap:5px; }
+/* 상단 UI */
+.top-ui-common { position:fixed; z-index:100; background:rgba(255,255,255,0.9); padding:8px 12px; border-radius:20px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.1); border:1.5px solid var(--brown); font-size:0.85rem; }
+.camp-btn { top:30px; left:20px; color:var(--brown); }
+.online-counter { top:30px; right:20px; display:flex; gap:5px; align-items:center; }
 .online-dot { width:8px; height:8px; background:#4CAF50; border-radius:50%; }
 
-/* 플로팅 버튼 */
-#menu-container { position:fixed; bottom:30px; left:20px; z-index:100; display:flex; flex-direction:column-reverse; gap:10px; align-items:center; }
-.float-btn { width:50px; height:50px; border-radius:50%; border:none; box-shadow:0 4px 10px rgba(0,0,0,0.2); font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+/* 하단 플로팅 버튼 */
+#menu-container { position:fixed; bottom:30px; left:20px; z-index:100; display:flex; flex-direction:column-reverse; gap:12px; align-items:center; }
+.float-btn { width:50px; height:50px; border-radius:50%; border:none; box-shadow:0 4px 10px rgba(0,0,0,0.2); font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.3s; }
 .menu-main-btn { background:#3E2723; color:#fff; z-index:101; }
-.sub-btn { background:#fff; opacity:0; transform:translateY(20px); transition:0.3s; pointer-events:none; }
+.menu-open .menu-main-btn { transform:rotate(90deg); }
+.sub-btn { background:#fff; opacity:0; transform:translateY(20px); pointer-events:none; }
 .menu-open .sub-btn { opacity:1; transform:translateY(0); pointer-events:auto; }
-.chat-btn { position:fixed; bottom:30px; right:20px; background:#FFECB3; z-index:100; }
-.chat-badge { position:absolute; top:0; right:0; width:12px; height:12px; background:red; border-radius:50%; display:none; }
+.chat-btn { position:fixed; bottom:30px; right:20px; background:#FFECB3; z-index:100; border:2px solid #FFCA28; }
+.chat-badge { position:absolute; top:-2px; right:-2px; width:12px; height:12px; background:red; border-radius:50%; display:none; border:2px solid #fff; }
 .chat-badge.active { display:block; }
 
 /* 팝업 공통 */
-.popup-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; display:none; justify-content:center; align-items:center; }
-.popup-overlay.active { display:flex; }
-.popup-content { background:#FFF8E1; width:90%; max-width:500px; height:80vh; border-radius:15px; display:flex; flex-direction:column; overflow:hidden; position:relative; }
-.popup-header { padding:15px; border-bottom:1px solid #FFE0B2; display:flex; justify-content:space-between; align-items:center; background:#fff; }
-.close-btn { font-size:1.5rem; background:none; border:none; cursor:pointer; }
+.popup-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:2000; display:none; justify-content:center; align-items:center; opacity:0; transition:opacity 0.3s; }
+.popup-overlay.active { display:flex; opacity:1; }
+.popup-content { background:#FFF8E1; width:90%; max-width:480px; height:80vh; border-radius:20px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+.popup-header { padding:15px; background:#fff; border-bottom:1px solid #FFE0B2; display:flex; justify-content:space-between; align-items:center; }
+.popup-header h2 { margin:0; font-size:1.1rem; color:var(--brown); }
+.close-btn { font-size:1.8rem; background:none; border:none; color:#999; }
 
-/* 기도 카드 (깨짐 방지 핵심) */
-#prayer-list { flex:1; overflow-y:auto; padding:10px; background:#fff; }
-.prayer-card { background:#fff; padding:15px; margin-bottom:10px; border-radius:10px; border-left:4px solid #FFCC80; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+/* 기도 카드 스타일 */
+#prayer-list { flex:1; overflow-y:auto; padding:15px; background:#fff; }
+.prayer-card { background:#fff; padding:15px; margin-bottom:15px; border-radius:12px; border-left:4px solid #FFCC80; box-shadow:0 2px 8px rgba(0,0,0,0.05); position:relative; }
 .prayer-card.pinned { background:#FFFDE7; border-left-color:#FFD600; }
-.prayer-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; position:relative; }
+.prayer-header { display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.8rem; color:#888; position:relative; }
+.prayer-content { font-size:1rem; line-height:1.5; color:#333; margin-bottom:10px; white-space:pre-wrap; }
+
+/* 더보기 메뉴 */
 .more-wrapper { position:relative; }
-.more-btn { background:none; border:none; font-size:1.2rem; cursor:pointer; padding:0 5px; }
-.more-options { position:absolute; right:0; top:25px; background:#fff; border:1px solid #ddd; border-radius:8px; display:none; flex-direction:column; z-index:100; width:120px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+.more-btn { border:none; background:none; font-size:1.2rem; cursor:pointer; padding:0 10px; color:#888; }
+.more-options { position:absolute; right:0; top:25px; background:#fff; border:1px solid #eee; border-radius:8px; display:none; flex-direction:column; z-index:500; width:120px; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
 .more-options.active { display:flex; }
-.opt-btn { padding:10px; border:none; background:none; text-align:left; cursor:pointer; border-bottom:1px solid #eee; }
-.opt-btn:hover { background:#f5f5f5; }
+.opt-btn { padding:10px; text-align:left; background:none; border:none; border-bottom:1px solid #f5f5f5; font-size:0.9rem; }
+.opt-btn:last-child { border:none; color:red; }
+
+/* 답글 */
+.reply-section { background:#fafafa; padding:10px; margin-top:10px; border-radius:8px; }
+.reply-item { display:flex; justify-content:space-between; font-size:0.9rem; padding:5px 0; border-bottom:1px dashed #eee; color:#666; }
+.text-btn { background:none; border:none; color:var(--orange); font-weight:bold; font-size:0.85rem; padding:5px 0; }
 
 /* 기타 */
-.reply-section { background:#fafafa; padding:10px; margin-top:10px; border-radius:8px; }
-.reply-item { display:flex; justify-content:space-between; font-size:0.9rem; padding:4px 0; border-bottom:1px dashed #eee; }
-.system-toast { position:fixed; top:80px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:20px; opacity:0; pointer-events:none; transition:0.3s; z-index:5000; }
+.settings-list { padding:10px; }
+.settings-item { display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #eee; background:#fff; align-items:center; }
+.system-toast { position:fixed; top:80px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:20px; opacity:0; transition:0.3s; pointer-events:none; z-index:5000; }
 .system-toast.show { opacity:1; pointer-events:auto; }
-.settings-item { display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #eee; background:#fff; }
