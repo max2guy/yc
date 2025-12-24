@@ -1,5 +1,5 @@
 // ==========================================
-// 연천장로교회 청년부 기도 네트워크 (Final + Kick)
+// 연천장로교회 청년부 기도 네트워크 (Final + Profile Upload)
 // ==========================================
 
 // 1. 기본 설정 및 서비스 워커
@@ -88,114 +88,70 @@ let dragStartY = 0;
 let isDragAction = false;
 const brightColors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9", "#DCEDC8", "#F0F4C3", "#FFF9C4", "#FFECB3", "#FFE0B2", "#FFCCBC", "#D7CCC8", "#F5F5F5", "#CFD8DC"];
 
-// ===============================================
-// [업그레이드] IP 추적 및 강제 퇴장(Kick) 시스템
-// ===============================================
-
-// 1. IP 가져오기
+// IP 추적 및 강제 퇴장(Kick) 시스템
 async function getMyIp() {
     try {
         const response = await fetch('https://api.ipify.org?format=json');
         const data = await response.json();
         return data.ip;
-    } catch (e) {
-        return '알수없음';
-    }
+    } catch (e) { return '알수없음'; }
 }
 
-// 2. 접속 정보 저장
 onlineRef.on('value', async (snapshot) => {
     if (snapshot.val()) { 
         const myIp = await getMyIp();
         const con = presenceRef.push();
         con.onDisconnect().remove();
-        con.set({
-            ip: myIp,
-            time: Date.now(),
-            device: navigator.userAgent
-        });
+        con.set({ ip: myIp, time: Date.now(), device: navigator.userAgent });
     }
 });
 
-// 3. 접속자 수 표시 및 관리자 클릭 이벤트
 presenceRef.on('value', (snapshot) => { 
     const count = snapshot.numChildren() || 0;
-    const counterEl = document.getElementById('online-count');
-    counterEl.innerText = `${count}명 접속 중`;
-    
-    const container = document.querySelector('.online-counter');
-    container.onclick = showConnectedUsers; // 클릭하면 명단 팝업
+    document.getElementById('online-count').innerText = `${count}명 접속 중`;
+    document.querySelector('.online-counter').onclick = showConnectedUsers;
 });
 
-// 4. [NEW] 접속자 관리 팝업 띄우기 (Kick 버튼 포함)
 function showConnectedUsers() {
-    if (!isAdmin) return; // 관리자만 가능
-
+    if (!isAdmin) return;
     presenceRef.once('value').then(snap => {
         const data = snap.val();
-        
-        // 기존 팝업 있으면 닫기
         const existing = document.getElementById('kick-modal');
         if(existing) existing.remove();
-
-        // 팝업 배경
         const modal = document.createElement('div');
         modal.id = 'kick-modal';
         modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;justify-content:center;align-items:center;animation:fadeIn 0.2s;";
-        
-        // 팝업 내용 박스
         let content = `<div style="background:white;width:85%;max-width:350px;border-radius:15px;padding:20px;max-height:70vh;overflow-y:auto;box-shadow:0 10px 25px rgba(0,0,0,0.5);">`;
-        
-        // 헤더
-        content += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:2px solid #FFAB91;padding-bottom:10px;">
-                        <h3 style="margin:0;color:#5D4037;">👮 접속자 관리</h3>
-                        <button onclick="document.getElementById('kick-modal').remove()" style="border:none;background:none;font-size:1.5rem;cursor:pointer;">&times;</button>
-                    </div>`;
-        
-        if (!data) {
-            content += `<p style="text-align:center;color:#888;">현재 접속자가 없습니다.</p>`;
-        } else {
+        content += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:2px solid #FFAB91;padding-bottom:10px;"><h3 style="margin:0;color:#5D4037;">👮 접속자 관리</h3><button onclick="document.getElementById('kick-modal').remove()" style="border:none;background:none;font-size:1.5rem;cursor:pointer;">&times;</button></div>`;
+        if (!data) content += `<p style="text-align:center;color:#888;">현재 접속자가 없습니다.</p>`;
+        else {
             Object.entries(data).forEach(([key, user]) => {
-                let info = "정보 없음 (구버전)";
-                let isMe = false; // (참고용) 본인 확인 로직은 복잡해서 생략, IP로 판단
-
+                let info = "정보 없음";
                 if(user && user.ip) {
                     let device = "기타 기기";
                     if (user.device.includes("iPhone")) device = "아이폰";
                     else if (user.device.includes("Android")) device = "갤럭시/안드로이드";
                     else if (user.device.includes("Windows")) device = "윈도우 PC";
                     else if (user.device.includes("Mac")) device = "맥(Mac)";
-                    
                     const time = new Date(user.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     info = `<b>${device}</b><br><span style="font-size:0.8rem;color:#888;">${user.ip} / ${time}</span>`;
                 }
-
-                // 리스트 아이템
-                content += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed #eee;">
-                                <div style="font-size:0.9rem;color:#333;line-height:1.4;">${info}</div>
-                                <button onclick="kickUser('${key}')" style="background:#FF5252;color:white;border:none;padding:6px 12px;border-radius:20px;cursor:pointer;font-weight:bold;font-size:0.8rem;box-shadow:0 2px 5px rgba(0,0,0,0.2);">Kick 👢</button>
-                            </div>`;
+                content += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed #eee;"><div style="font-size:0.9rem;color:#333;line-height:1.4;">${info}</div><button onclick="kickUser('${key}')" style="background:#FF5252;color:white;border:none;padding:6px 12px;border-radius:20px;cursor:pointer;font-weight:bold;font-size:0.8rem;box-shadow:0 2px 5px rgba(0,0,0,0.2);">Kick 👢</button></div>`;
             });
         }
         content += `</div>`;
         modal.innerHTML = content;
-        
-        // 닫기 이벤트 (배경 클릭 시)
         modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
-        
         document.body.appendChild(modal);
     });
 }
 
-// 5. [NEW] 강제 퇴장 함수
 function kickUser(key) {
-    if(confirm("이 접속자를 강제로 내보내시겠습니까?\n(데이터베이스에서 즉시 삭제합니다)")) {
+    if(confirm("이 접속자를 강제로 내보내시겠습니까?")) {
         presenceRef.child(key).remove().then(() => {
             alert("성공적으로 퇴장시켰습니다.");
-            document.getElementById('kick-modal').remove(); // 팝업 닫기
-            setTimeout(showConnectedUsers, 500); // 0.5초 뒤 다시 열어서 갱신 확인
-        }).catch(err => {
-            alert("오류가 발생했습니다: " + err);
+            document.getElementById('kick-modal').remove();
+            setTimeout(showConnectedUsers, 500);
         });
     }
 }
@@ -203,7 +159,6 @@ function kickUser(key) {
 const bannedWords = ["욕설", "비속어", "시발", "씨발", "개새끼", "병신", "지랄", "존나", "졸라", "미친", "성매매", "섹스", "야동", "조건만남", "주식", "코인", "비트코인", "투자", "리딩방", "수익", "바보", "멍청이"];
 function containsBannedWords(text) { return bannedWords.some(word => text.includes(word)); }
 
-// 관리자 인증 상태 체크
 firebase.auth().onAuthStateChanged((user) => {
     if (user) {
         isAdmin = true;
@@ -230,11 +185,7 @@ function loadData() {
     .then(([mSnap, cSnap]) => {
         const mData = mSnap.val();
         const cData = cSnap.val();
-        
-        if (mData) {
-            members = Object.keys(mData).map(key => ({ firebaseKey: key, ...mData[key] }));
-        }
-
+        if (mData) members = Object.keys(mData).map(key => ({ firebaseKey: key, ...mData[key] }));
         if(cData && cData.icon) centerNode.icon = cData.icon;
         
         members.forEach(m => {
@@ -298,7 +249,7 @@ membersRef.on('child_removed', (snap) => {
     }
 });
 
-// 5. D3 시각화
+// D3 시각화
 const width = window.innerWidth;
 const height = window.innerHeight;
 const svg = d3.select("#visualization").append("svg").attr("width", width).attr("height", height);
@@ -330,7 +281,7 @@ function updateGraph() {
     patterns.select("image").attr("xlink:href", d => d.photoUrl);
     patterns.exit().remove();
 
-    // 선 (얇게 0.8px)
+    // 선
     link = linkGroup.selectAll("line").data(links, d => d.target.id || d.target);
     link.exit().remove();
     
@@ -340,11 +291,7 @@ function updateGraph() {
         .style("opacity", 0)
         .style("filter", "drop-shadow(0 0.5px 1px rgba(0,0,0,0.15))");
     
-    linkEnter.transition()
-        .delay(800)                     
-        .duration(1500)                 
-        .style("opacity", 0.5);
-    
+    linkEnter.transition().delay(800).duration(1500).style("opacity", 0.5);
     link = linkEnter.merge(link);
 
     // 노드
@@ -420,11 +367,10 @@ function updateNodeVisuals() {
         const textDelay = isFirstRender ? (d.id === 'center' ? 0 : 800 + (globalNodes.indexOf(d) * 80)) : 0;
         
         if (circle.attr("r") == 0) {
-                const delay = textDelay;
-                const dur = isFirstRender ? 800 : 500;
-                circle.transition().delay(delay).duration(dur).ease(d3.easeElasticOut.amplitude(3)).attr("r", r);
+            const dur = isFirstRender ? 800 : 500;
+            circle.transition().delay(textDelay).duration(dur).ease(d3.easeElasticOut.amplitude(3)).attr("r", r);
         } else {
-                circle.transition().duration(500).attr("r", r);
+            circle.transition().duration(500).attr("r", r);
         }
 
         const fillUrl = (d.photoUrl && d.type !== 'root') ? `url(#img-${d.id})` : (d.type === "root" ? "#FFF8E1" : d.color);
@@ -455,17 +401,12 @@ function updateNodeVisuals() {
         } else {
             if (d.photoUrl) textY = r + 15;
             textEl.attr("y", textY).text(d.name).attr("font-size", "12px");
-            
             const bbox = textEl.node().getBBox(); 
             const w = bbox.width > 0 ? bbox.width + 16 : d.name.length * 12 + 16;
             
             if (d.photoUrl) {
-                rectEl.style("display", "block")
-                    .attr("x", -w / 2).attr("y", textY - 10).attr("width", w).attr("height", 20)
-                    .transition().delay(textDelay).duration(500).style("opacity", 1);
-            } else {
-                rectEl.style("display", "none");
-            }
+                rectEl.style("display", "block").attr("x", -w / 2).attr("y", textY - 10).attr("width", w).attr("height", 20).transition().delay(textDelay).duration(500).style("opacity", 1);
+            } else { rectEl.style("display", "none"); }
             textEl.transition().delay(textDelay).duration(800).style("opacity", 1);
         }
 
@@ -482,9 +423,7 @@ function updateNodeVisuals() {
                 badge.select("circle").attr("fill", unread > 0 ? "#FF5252" : "#FF9800");
                 badge.select("text").text(unread > 0 ? unread : "N");
                 badge.transition().delay(textDelay + 400).duration(200).attr("transform", `translate(${bx}, ${by})`).style("opacity", 1);
-            } else {
-                badge.style("opacity", 0);
-            }
+            } else { badge.style("opacity", 0); }
         }
     });
 }
@@ -492,29 +431,15 @@ function updateNodeVisuals() {
 function calculateRadius(d) { if (d.type === 'root') return 80; return sizeScale(getTotalPrayerCount(d)); }
 function getTotalPrayerCount(d) { if (d.type === 'root') return 0; let t = d.prayers ? d.prayers.length : 0; if(d.prayers) d.prayers.forEach(p => {if(p.replies) t+=p.replies.length}); return t; }
 function getRandomColor() { return brightColors[Math.floor(Math.random()*brightColors.length)]; }
-
-function dragstarted(event) { 
-    isDragAction = false;
-    dragStartX = event.x; dragStartY = event.y;
-    if (!event.active) simulation.alphaTarget(0.3).restart(); 
-    event.subject.fx = event.subject.x; event.subject.fy = event.subject.y; 
-}
-function dragged(event) { 
-    const dx = event.x - dragStartX; const dy = event.y - dragStartY;
-    if (dx*dx + dy*dy > 25) isDragAction = true;
-    event.subject.fx = event.x; event.subject.fy = event.y; 
-}
-function dragended(event) { 
-    if (!event.active) simulation.alphaTarget(0); 
-    event.subject.fx = null; event.subject.fy = null; 
-}
+function dragstarted(event) { isDragAction = false; dragStartX = event.x; dragStartY = event.y; if (!event.active) simulation.alphaTarget(0.3).restart(); event.subject.fx = event.subject.x; event.subject.fy = event.subject.y; }
+function dragged(event) { const dx = event.x - dragStartX; const dy = event.y - dragStartY; if (dx*dx + dy*dy > 25) isDragAction = true; event.subject.fx = event.x; event.subject.fy = event.y; }
+function dragended(event) { if (!event.active) simulation.alphaTarget(0); event.subject.fx = null; event.subject.fy = null; }
 
 window.addEventListener("resize", () => { const w = window.innerWidth; const h = window.innerHeight; svg.attr("width", w).attr("height", h); simulation.force("center", d3.forceCenter(w/2, h/2)); simulation.alpha(0.5).restart(); resizeWeatherCanvas(); });
 
-// 6. UI 및 기능 핸들러
+// UI 핸들러
 let currentMemberData = null;
 function toggleCampPopup() { document.getElementById('camp-popup').classList.toggle('active'); }
-
 function toggleChatPopup() { 
     const el = document.getElementById('chat-popup'); 
     el.classList.toggle('active'); 
@@ -550,27 +475,14 @@ function openColorModal() {
     document.getElementById('color-modal').classList.add('active');
 }
 function closeColorModal() { document.getElementById('color-modal').classList.remove('active'); }
-function selectColor(color) {
-    updateMemberColor(color);
-    document.getElementById("current-color-display").style.backgroundColor = color;
-    closeColorModal();
-}
-
-// 관리자 인증 (Firebase Auth 사용)
-function toggleAdminMode() { 
-    if(isAdmin) { 
-        firebase.auth().signOut().then(() => {
-            alert("관리자 모드 해제");
-        });
-    } else openAdminModal(); 
-}
+function selectColor(color) { updateMemberColor(color); document.getElementById("current-color-display").style.backgroundColor = color; closeColorModal(); }
+function toggleAdminMode() { if(isAdmin) { firebase.auth().signOut().then(() => alert("관리자 모드 해제")); } else openAdminModal(); }
 function openAdminModal() { document.getElementById('admin-modal').classList.add('active'); document.getElementById('admin-pw').focus(); }
 function closeAdminModal(e) { if(e.target.id === 'admin-modal') document.getElementById('admin-modal').classList.remove('active'); }
 
 function checkAdmin() { 
     const inputPw = document.getElementById('admin-pw').value;
     const adminEmail = "admin@church.com"; 
-    
     firebase.auth().signInWithEmailAndPassword(adminEmail, inputPw)
     .then(() => {
         document.getElementById('admin-modal').classList.remove('active');
@@ -578,29 +490,80 @@ function checkAdmin() {
         document.getElementById('admin-pw').value=""; 
         if(currentMemberData) renderPrayers();
     })
-    .catch((error) => {
-        alert("비밀번호가 틀렸습니다.");
-        console.error(error);
-    });
+    .catch((error) => { alert("비밀번호가 틀렸습니다."); console.error(error); });
 }
 
 function addNewMember() { const n = prompt("이름:"); if(n && n.trim()) { if(containsBannedWords(n)) return alert("부적절한 이름"); membersRef.push({id:`member_${Date.now()}`, name:n.trim(), type:"member", color:getRandomColor(), prayers:[], rotation:0, rotationDirection:1}); } }
 function updateMemberColor(v) { if(currentMemberData) membersRef.child(currentMemberData.firebaseKey).update({color: v}); }
 function deleteMember() { if(currentMemberData && confirm("삭제하시겠습니까?")) { membersRef.child(currentMemberData.firebaseKey).remove(); closePrayerPopup(); }}
-function editProfile() { 
+
+// ==========================================
+// [신규] 프로필 편집 기능 (사진 업로드 포함)
+// ==========================================
+let tempProfileImage = "";
+
+function editProfile() {
     if (!currentMemberData) return;
-    const newName = prompt("이름 수정:", currentMemberData.name);
-    if (newName !== null) {
-        const newPhoto = prompt("프로필 사진 URL (비워두면 기본):", currentMemberData.photoUrl || "");
-        if (containsBannedWords(newName)) return alert("부적절한 단어");
-        const updates = { name: newName.trim() };
-        if (newPhoto !== null) updates.photoUrl = newPhoto.trim();
-        membersRef.child(currentMemberData.firebaseKey).update(updates);
-        document.getElementById("panel-name").innerText = newName.trim();
-    }
+    
+    // 모달에 현재 정보 채우기
+    document.getElementById('edit-profile-name').value = currentMemberData.name;
+    const currentImg = currentMemberData.photoUrl || "https://via.placeholder.com/150?text=No+Image";
+    document.getElementById('edit-profile-preview').src = currentImg;
+    
+    tempProfileImage = currentMemberData.photoUrl || "";
+    document.getElementById('profile-edit-modal').classList.add('active');
 }
 
-// 헬퍼 함수
+function closeProfileEditModal() {
+    document.getElementById('profile-edit-modal').classList.remove('active');
+}
+
+function handleProfileFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    
+    reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const Size = 300; 
+            canvas.width = Size; canvas.height = Size;
+
+            let sx, sy, sWidth, sHeight;
+            if (img.width > img.height) {
+                sHeight = img.height; sWidth = img.height; 
+                sx = (img.width - img.height) / 2; sy = 0;
+            } else {
+                sWidth = img.width; sHeight = img.width; 
+                sx = 0; sy = (img.height - img.width) / 2; 
+            }
+            ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, Size, Size);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            
+            document.getElementById('edit-profile-preview').src = dataUrl;
+            tempProfileImage = dataUrl;
+        };
+    };
+}
+
+function saveProfileChanges() {
+    if (!currentMemberData) return;
+    const newName = document.getElementById('edit-profile-name').value.trim();
+    if (!newName) return alert("이름을 입력해주세요.");
+    if (containsBannedWords(newName)) return alert("부적절한 이름입니다.");
+
+    const updates = { name: newName, photoUrl: tempProfileImage };
+    membersRef.child(currentMemberData.firebaseKey).update(updates).then(() => {
+        document.getElementById("panel-name").innerText = newName;
+        closeProfileEditModal();
+    });
+}
+
 function createSafeElement(tag, className, text) {
     const el = document.createElement(tag);
     if (className) el.className = className;
@@ -611,11 +574,7 @@ function createSafeElement(tag, className, text) {
 function renderPrayers() {
     const list = document.getElementById("prayer-list"); 
     list.innerHTML = "";
-    
-    if(!currentMemberData || !currentMemberData.prayers) { 
-        list.innerHTML = "<p style='text-align:center; margin-top:20px;'>기도제목을 나눠주세요!</p>"; 
-        return; 
-    }
+    if(!currentMemberData || !currentMemberData.prayers) { list.innerHTML = "<p style='text-align:center; margin-top:20px;'>기도제목을 나눠주세요!</p>"; return; }
 
     currentMemberData.prayers.forEach((p, i) => {
         const div = createSafeElement("div", "prayer-card");
@@ -628,42 +587,28 @@ function renderPrayers() {
         let delBtnHtml = `<button class="text-btn" onclick="deletePrayer(${i})">삭제</button>`;
         if(isAdmin) delBtnHtml = `<button class="text-btn admin-delete-btn" onclick="adminDeletePrayer(${i})">강제삭제</button>`;
         
-        actionGroup.innerHTML = `
-            <button class="text-btn" onclick="editPrayer(${i})">수정</button>
-            ${delBtnHtml}
-            <button class="text-btn" onclick="addReply(${i})">답글</button>
-        `;
-
-        div.appendChild(header);
-        div.appendChild(content);
-        div.appendChild(actionGroup);
+        actionGroup.innerHTML = `<button class="text-btn" onclick="editPrayer(${i})">수정</button>${delBtnHtml}<button class="text-btn" onclick="addReply(${i})">답글</button>`;
+        div.appendChild(header); div.appendChild(content); div.appendChild(actionGroup);
 
         if (p.replies) {
             const replySection = createSafeElement("div", "reply-section");
-            p.replies.forEach(r => {
-                const rItem = createSafeElement("div", "reply-item", "💬 " + r.content);
-                replySection.appendChild(rItem);
-            });
+            p.replies.forEach(r => { const rItem = createSafeElement("div", "reply-item", "💬 " + r.content); replySection.appendChild(rItem); });
             div.appendChild(replySection);
         }
         list.appendChild(div);
     });
 }
 
-// 실시간 삭제 기능
 function deletePrayer(i) {
     if(confirm("정말 삭제하시겠습니까?")) {
-        currentMemberData.prayers.splice(i, 1);
-        renderPrayers(); 
+        currentMemberData.prayers.splice(i, 1); renderPrayers(); 
         const updateData = currentMemberData.prayers.length > 0 ? currentMemberData.prayers : [];
         membersRef.child(currentMemberData.firebaseKey).update({prayers: updateData});
     }
 }
-
 function adminDeletePrayer(i) { 
     if(confirm("관리자 권한으로 삭제하시겠습니까?")) { 
-        currentMemberData.prayers.splice(i,1); 
-        renderPrayers();
+        currentMemberData.prayers.splice(i,1); renderPrayers();
         const updateData = currentMemberData.prayers.length > 0 ? currentMemberData.prayers : [];
         membersRef.child(currentMemberData.firebaseKey).update({prayers: updateData}); 
     } 
@@ -681,11 +626,8 @@ messagesRef.limitToLast(50).on('child_added', snap => {
     if (d.timestamp > loadTime && d.senderId !== mySessionId) {
         unreadChatKeys.add(snap.key);
         const popup = document.getElementById('chat-popup');
-        if (!popup.classList.contains('active')) {
-            document.getElementById('chat-badge').classList.add('active');
-        }
+        if (!popup.classList.contains('active')) { document.getElementById('chat-badge').classList.add('active'); }
     }
-
     const isMine = d.senderId === mySessionId;
     const div = document.createElement("div"); div.className = "chat-bubble-wrapper"; div.setAttribute('data-key', snap.key);
     div.style.display="flex"; div.style.flexDirection="column"; div.style.alignItems=isMine?"flex-end":"flex-start";
@@ -698,170 +640,37 @@ messagesRef.limitToLast(50).on('child_added', snap => {
 messagesRef.on('child_removed', snap => { 
     const el = document.querySelector(`.chat-bubble-wrapper[data-key="${snap.key}"]`); 
     if(el) el.remove(); 
-    if(unreadChatKeys.has(snap.key)) {
-        unreadChatKeys.delete(snap.key);
-        if(unreadChatKeys.size === 0) {
-            document.getElementById('chat-badge').classList.remove('active');
-        }
-    }
+    if(unreadChatKeys.has(snap.key)) { unreadChatKeys.delete(snap.key); if(unreadChatKeys.size === 0) { document.getElementById('chat-badge').classList.remove('active'); } }
 });
 
-// 배경음악
-let isMusicPlaying = false;
-const bgmAudio = document.getElementById('bgm-player');
-const musicBtn = document.getElementById('music-trigger');
-
-function toggleMusic() {
-    if (isMusicPlaying) {
-        bgmAudio.pause();
-        isMusicPlaying = false;
-        musicBtn.innerText = "🔇";
-        musicBtn.style.animation = "none";
-        showWeatherToast("배경음악", "음악을 껐습니다.");
-    } else {
-        bgmAudio.play().then(() => {
-            isMusicPlaying = true;
-            musicBtn.innerText = "🎵";
-            musicBtn.style.animation = "spin-slow 4s infinite linear";
-            showWeatherToast("배경음악", "음악을 재생합니다 🎹");
-        }).catch(error => {
-            alert("음악을 재생하려면 화면을 먼저 터치해주세요.");
-        });
-    }
-}
-
-// 7. 날씨 및 통합 렌더링 루프
+// 날씨 및 게임 루프
 const apiKey = "39d8b0517ec448eb742a1ee5e39c2bf3"; 
-
-async function fetchWeather() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                try {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`);
-                    const d = await res.json();
-                    applyWeather(d, true);
-                } catch(e) { useFallbackWeather(); }
-            },
-            (err) => { useFallbackWeather(); }
-        );
-    } else { useFallbackWeather(); }
-}
-
-async function useFallbackWeather() {
-        try { 
-        const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=38.0964&longitude=127.0748&current_weather=true");
-        const d = await res.json();
-        const simulatedData = {
-            name: "연천군 (기본)",
-            main: { temp: d.current_weather.temperature },
-            weather: [{ id: convertMeteoCode(d.current_weather.weathercode) }],
-            sys: { sunrise: 0, sunset: 0 },
-            dt: Date.now() / 1000
-        };
-        const hour = new Date().getHours();
-        const isDay = hour > 6 && hour < 18;
-        centerNode.icon = isDay ? "☀️" : "🌙";
-        applyWeather(simulatedData, false);
-    } catch(e){ showWeatherToast("날씨 정보 없음", ""); }
-}
-
-function convertMeteoCode(code) {
-    if (code >= 50 && code <= 69) return 500;
-    if (code >= 70 && code <= 79) return 600; 
-    return 800; 
-}
-
-function applyWeather(d, isReal) {
-    const temp = Math.round(d.main.temp);
-    const location = d.name || "연천군";
-    let statusText = "맑음";
-
-    if (isReal) {
-        const isDay = d.dt > d.sys.sunrise && d.dt < d.sys.sunset;
-        centerNode.icon = isDay ? "☀️" : "🌙";
-    }
-    
-    const code = d.weather[0].id;
-    if (code >= 200 && code < 600) { createRain(); centerNode.icon = "🌧️"; statusText = "비"; } 
-    else if (code >= 600 && code < 700) { createSnow(); centerNode.icon = "❄️"; statusText = "눈"; } 
-    else if (code > 800) { statusText = "흐림"; centerNode.icon = "☁️"; }
-
-    updateNodeVisuals();
-    showWeatherToast(location, `${statusText}, ${temp}°C`);
-}
-
-function showWeatherToast(loc, info) {
-    const toast = document.getElementById('weather-toast');
-    const text = document.getElementById('weather-text');
-    text.innerHTML = `📍 ${loc}<br>${info}`;
-    toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 3000);
-}
-
+async function fetchWeather() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(async (position) => { try { const lat = position.coords.latitude; const lon = position.coords.longitude; const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`); const d = await res.json(); applyWeather(d, true); } catch(e) { useFallbackWeather(); } }, (err) => { useFallbackWeather(); }); } else { useFallbackWeather(); } }
+async function useFallbackWeather() { try { const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=38.0964&longitude=127.0748&current_weather=true"); const d = await res.json(); const simulatedData = { name: "연천군 (기본)", main: { temp: d.current_weather.temperature }, weather: [{ id: convertMeteoCode(d.current_weather.weathercode) }], sys: { sunrise: 0, sunset: 0 }, dt: Date.now() / 1000 }; const hour = new Date().getHours(); const isDay = hour > 6 && hour < 18; centerNode.icon = isDay ? "☀️" : "🌙"; applyWeather(simulatedData, false); } catch(e){ showWeatherToast("날씨 정보 없음", ""); } }
+function convertMeteoCode(code) { if (code >= 50 && code <= 69) return 500; if (code >= 70 && code <= 79) return 600; return 800; }
+function applyWeather(d, isReal) { const temp = Math.round(d.main.temp); const location = d.name || "연천군"; let statusText = "맑음"; if (isReal) { const isDay = d.dt > d.sys.sunrise && d.dt < d.sys.sunset; centerNode.icon = isDay ? "☀️" : "🌙"; } const code = d.weather[0].id; if (code >= 200 && code < 600) { createRain(); centerNode.icon = "🌧️"; statusText = "비"; } else if (code >= 600 && code < 700) { createSnow(); centerNode.icon = "❄️"; statusText = "눈"; } else if (code > 800) { statusText = "흐림"; centerNode.icon = "☁️"; } updateNodeVisuals(); showWeatherToast(location, `${statusText}, ${temp}°C`); }
+function showWeatherToast(loc, info) { const toast = document.getElementById('weather-toast'); const text = document.getElementById('weather-text'); text.innerHTML = `📍 ${loc}<br>${info}`; toast.classList.add('show'); setTimeout(() => { toast.classList.remove('show'); }, 3000); }
 const wc = document.getElementById('weather-canvas'); const wctx = wc.getContext('2d'); let wParts = [];
 function resizeWeatherCanvas() { wc.width = window.innerWidth; wc.height = window.innerHeight; }
-
-function createRain() { 
-    wParts=[]; 
-    for(let i=0;i<35;i++) { wParts.push({ x: Math.random()*wc.width, y: Math.random()*wc.height, s: 3+Math.random()*4, l: 7+Math.random()*8 }); }
-}
-function createSnow() { 
-    wParts=[]; 
-    for(let i=0;i<35;i++) { wParts.push({ x: Math.random()*wc.width, y: Math.random()*wc.height, s: 1+Math.random()*2, r: 2+Math.random()*3 }); }
-}
-
+function createRain() { wParts=[]; for(let i=0;i<35;i++) { wParts.push({ x: Math.random()*wc.width, y: Math.random()*wc.height, s: 3+Math.random()*4, l: 7+Math.random()*8 }); } }
+function createSnow() { wParts=[]; for(let i=0;i<35;i++) { wParts.push({ x: Math.random()*wc.width, y: Math.random()*wc.height, s: 1+Math.random()*2, r: 2+Math.random()*3 }); } }
 function openLightbox(src) { document.getElementById('lightbox-img').src=src; document.getElementById('lightbox').classList.add('active'); }
 function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
 
-// 8. 통합 게임 루프
-let lastTime = 0;
-const fpsInterval = 1000 / 60; 
-
+let lastTime = 0; const fpsInterval = 1000 / 60; 
 function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
-
     const elapsed = timestamp - lastTime;
     if (elapsed < fpsInterval) return;
-
     lastTime = timestamp - (elapsed % fpsInterval);
-
-    // 1. 회전 애니메이션
     if(node) {
-        members.forEach(m => { 
-            m.rotation = (m.rotation || 0) + (m.rotationDirection * 0.1); 
-            if(m.rotation > 360) m.rotation -= 360; 
-            else if(m.rotation < -360) m.rotation += 360; 
-        });
+        members.forEach(m => { m.rotation = (m.rotation || 0) + (m.rotationDirection * 0.1); if(m.rotation > 360) m.rotation -= 360; else if(m.rotation < -360) m.rotation += 360; });
         node.attr("transform", d => `translate(${d.x},${d.y}) rotate(${d.rotation || 0})`);
-        
-        // 선 업데이트
-        if(link) {
-            link.attr("x1", d => d.source.x)
-                .attr("y1", d => d.source.y)
-                .attr("x2", d => d.target.x)
-                .attr("y2", d => d.target.y);
-        }
+        if(link) { link.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y); }
     }
-
-    // 2. 날씨 애니메이션
     if (wParts.length > 0) {
-        wctx.clearRect(0,0,wc.width,wc.height);
-        wctx.fillStyle = "rgba(255,255,255,0.8)";
-        wctx.strokeStyle = "rgba(174,194,224,0.8)";
-        wctx.lineWidth=1;
-        
-        wParts.forEach(p => { 
-            if(centerNode.icon === "🌧️") { // 비
-                wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.lineTo(p.x,p.y+p.l); wctx.stroke(); 
-                p.y+=p.s; if(p.y>wc.height) p.y=-p.l; 
-            } else { // 눈
-                wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.arc(p.x,p.y,p.r,0,Math.PI*2); wctx.fill(); 
-                p.y+=p.s; if(p.y>wc.height) p.y=-5; 
-            } 
-        });
+        wctx.clearRect(0,0,wc.width,wc.height); wctx.fillStyle = "rgba(255,255,255,0.8)"; wctx.strokeStyle = "rgba(174,194,224,0.8)"; wctx.lineWidth=1;
+        wParts.forEach(p => { if(centerNode.icon === "🌧️") { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.lineTo(p.x,p.y+p.l); wctx.stroke(); p.y+=p.s; if(p.y>wc.height) p.y=-p.l; } else { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.arc(p.x,p.y,p.r,0,Math.PI*2); wctx.fill(); p.y+=p.s; if(p.y>wc.height) p.y=-5; } });
     }
 }
 resizeWeatherCanvas();
