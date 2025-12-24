@@ -1,6 +1,6 @@
-/* style.css */
+/* style.css - UI Optimized Version */
 
-/* [1-a] 터치 최적화: 탭 하이라이트 제거 */
+/* [기본 설정] 터치 최적화 & 하이라이트 제거 */
 * {
     -webkit-tap-highlight-color: transparent;
 }
@@ -26,8 +26,8 @@ body {
     user-select: none;
 }
 
-/* [1-a] 버튼 터치 반응성 개선 */
-button, .float-btn, .prayer-card {
+/* 버튼 터치 반응성 개선 */
+button, .float-btn, .icon-btn {
     touch-action: manipulation;
     user-select: none;
     -webkit-user-select: none;
@@ -179,18 +179,89 @@ button, .float-btn, .prayer-card {
 
 #prayer-list { flex-grow: 1; overflow-y: auto; padding: 12px; background: #fff; -webkit-overflow-scrolling: touch; }
 
-.prayer-card { background: #FFF; border-radius: 12px; padding: 14px; margin-bottom: 12px; border-left: 4px solid #FFCC80; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); animation: slideIn 0.3s ease; }
+/* ========================================= */
+/* [UI 최적화] 기도카드 디자인 리뉴얼 */
+/* ========================================= */
+.prayer-card {
+    background: #FFF;
+    border-radius: 16px; 
+    padding: 18px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(0,0,0,0.05); 
+    border-left: 5px solid #FFCC80; 
+    box-shadow: 0 4px 20px rgba(141, 110, 99, 0.08); 
+    transition: transform 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.3s ease;
+}
 @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.prayer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.75rem; color: #8D6E63; }
-.prayer-content { font-size: 0.95rem; line-height: 1.5; color: #3E2723; word-wrap: break-word; margin-bottom: 10px; }
-.action-group { display: flex; gap: 12px; padding-top: 8px; border-top: 1px solid #FFF3E0; }
-.text-btn { font-size: 0.85rem; background: none; border: none; cursor: pointer; color: #FF7043; font-weight: bold; padding: 4px 8px; transition: opacity 0.2s; }
-.text-btn:hover { opacity: 0.7; } .text-btn:active { transform: scale(0.95); }
+.prayer-card:active { transform: scale(0.98); }
 
-.reply-section { margin-top: 10px; background-color: #FFF8E1; border-radius: 8px; padding: 10px; }
-.reply-item { font-size: 0.85rem; border-bottom: 1px dashed #FFE0B2; padding: 5px 0; color: #E65100; }
-.reply-item:last-child { border-bottom: none; }
+/* 고정된 카드 스타일 강화 */
+.prayer-card.pinned {
+    background-color: #FFFDE7;
+    border-color: #FFD54F;
+    border-left-color: #FFC107;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.15);
+}
+
+.prayer-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 12px;
+}
+.prayer-date {
+    font-size: 0.75rem; color: #aaa; font-weight: 500;
+    display: flex; align-items: center; gap: 4px;
+}
+.pinned-mark { color: #FF8F00; font-size: 0.9rem; }
+
+.prayer-content {
+    font-size: 1rem; line-height: 1.6; color: #3E2723;
+    word-wrap: break-word; white-space: pre-wrap; 
+    margin-bottom: 15px; font-weight: 500;
+}
+
+/* 아이콘 액션 바 */
+.action-group {
+    display: flex; justify-content: flex-end; gap: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #eee;
+}
+
+.icon-btn {
+    background: #F5F5F5; border: none; border-radius: 8px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s;
+    color: #8D6E63;
+}
+.icon-btn:hover { background: #EFEBE9; color: #5D4037; }
+.icon-btn:active { transform: scale(0.9); }
+.icon-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.icon-btn.active { background: #FFF3E0; color: #FF9800; }
+
+/* 답글(댓글) 말풍선 스타일 */
+.reply-section {
+    margin-top: 15px;
+    background: #FAFAFA;
+    border-radius: 12px;
+    padding: 10px;
+}
+.reply-item {
+    font-size: 0.85rem; color: #5D4037;
+    padding: 8px 10px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex; gap: 6px;
+}
+.reply-item:last-child { margin-bottom: 0; }
+.reply-icon { color: #FFCC80; font-size: 0.8rem; margin-top: 2px; }
+
+/* ------------------------------------- */
 
 .prayer-input-area { padding: 12px; background: #fff; border-top: 2px solid #FFE0B2; flex-shrink: 0; }
 .prayer-verse { background: #FFF8E1; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #5D4037; text-align: center; line-height: 1.4; }
@@ -216,7 +287,6 @@ button, .float-btn, .prayer-card {
 @media (max-width: 768px) {
     .popup-content { width: 95%; height: 90vh; border-radius: 20px; }
     #prayer-list { padding: 10px; }
-    .prayer-card { padding: 12px; margin-bottom: 10px; }
     .prayer-input-area { padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
 }
 
@@ -342,17 +412,7 @@ button, .float-btn, .prayer-card {
 .btn-save { background: linear-gradient(to right, #8D6E63, #6D4C41); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 .btn-reset { background: #EFEBE9; color: #5D4037; border: 1px solid #D7CCC8; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-/* Pinned Post Styles */
-.prayer-card.pinned {
-    background-color: #FFFDE7;
-    border: 2px solid #FFD54F;
-    border-left: 6px solid #FFC107;
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
-    margin-bottom: 15px;
-}
-.pinned-icon { margin-right: 6px; font-size: 1.1rem; vertical-align: middle; color: #FF8F00; }
-
-/* [1-b] Install Banner */
+/* [Install Banner] */
 .install-banner {
     position: fixed; bottom: -120px; left: 20px; right: 20px;
     background: rgba(255, 255, 255, 0.95);
@@ -375,9 +435,7 @@ button, .float-btn, .prayer-card {
     .install-banner.show { bottom: calc(20px + env(safe-area-inset-bottom)); }
 }
 
-/* ========================================================= */
-/* [3] Skeleton UI (스켈레톤 로딩 애니메이션) */
-/* ========================================================= */
+/* [Skeleton UI] */
 @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
