@@ -16,23 +16,42 @@ if ('serviceWorker' in navigator) {
     }, function(err) { console.log('SW Fail: ', err); });
 }
 
-// PWA 설치 버튼 로직
+// =========================================================
+// [1-b] PWA 설치 버튼 로직 (세련된 바텀 시트)
+// =========================================================
 let deferredPrompt;
+const installBanner = document.getElementById('install-banner');
+
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    const installBtn = document.getElementById('installBtn');
-    if (installBtn) {
-        installBtn.style.display = 'block';
-        installBtn.onclick = () => {
+    
+    // 앱 접속 후 5초 뒤에 자연스럽게 설치 유도 배너 노출
+    setTimeout(() => {
+        if(installBanner) installBanner.classList.add('show');
+    }, 5000);
+});
+
+// 설치 버튼 클릭
+if(document.getElementById('btn-install-app')) {
+    document.getElementById('btn-install-app').addEventListener('click', () => {
+        if (installBanner) installBanner.classList.remove('show');
+        if (deferredPrompt) {
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((result) => {
-                if (result.outcome === 'accepted') installBtn.style.display = 'none';
                 deferredPrompt = null;
             });
-        };
-    }
-});
+        }
+    });
+}
+
+// 닫기(X) 버튼 클릭
+if(document.getElementById('btn-close-install')) {
+    document.getElementById('btn-close-install').addEventListener('click', () => {
+        if (installBanner) installBanner.classList.remove('show');
+    });
+}
+
 
 // UI 핸들러
 let isFabOpen = false;
@@ -213,10 +232,8 @@ let centerNode = { id: "center", name: "연천장로교회\n청년부\n함께 �
 let members = [];
 let isDataLoaded = false;
 
-// [수정] loadData 함수: 3초 인위적 딜레이(setTimeout) 제거
+// [성능 최적화] 3초 딜레이 없이 데이터 로드 즉시 실행
 function loadData() {
-    // 3초 딜레이 제거됨. 데이터가 오면 바로 로딩창 닫음.
-
     Promise.all([membersRef.once('value'), centerNodeRef.once('value')])
     .then(([mSnap, cSnap]) => {
         const mData = mSnap.val();
@@ -230,7 +247,7 @@ function loadData() {
         });
 
         isDataLoaded = true;
-        // 데이터가 준비되면 즉시 로딩 화면 끄기
+        // 데이터 준비 즉시 로딩 종료
         document.getElementById('loading').classList.add('hide');
         updateGraph(); 
         fetchWeather();
@@ -238,7 +255,6 @@ function loadData() {
     })
     .catch(err => {
         console.log("Firebase Load Error:", err);
-        // 에러가 나더라도 로딩 화면이 계속 돌지 않게 끔
         document.getElementById('loading').classList.add('hide'); 
         updateGraph(); 
     });
