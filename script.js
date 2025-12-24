@@ -1,5 +1,5 @@
 // ==========================================
-// 연천장로교회 청년부 기도 네트워크 (Final Fix v6)
+// 연천장로교회 청년부 기도 네트워크 (Final v7 - Notification Toggle)
 // ==========================================
 
 // 1. 서비스 워커 등록
@@ -91,9 +91,10 @@ if (!mySessionId) {
 // 3. 변수 및 상태
 let isAdmin = false;
 let isFirstRender = true;
-
-// ★ [수정] 읽음 상태를 로컬 저장소에서 불러오기 (숫자 배지 초기화 방지)
 let readStatus = JSON.parse(localStorage.getItem('readStatus')) || {};
+
+// ★ [신규] 알림 설정 상태 (기본값: 꺼짐 false)
+let isNotiEnabled = localStorage.getItem('isNotiEnabled') === 'true';
 
 let newMemberIds = new Set();
 let globalNodes = [];
@@ -109,43 +110,76 @@ let dragStartY = 0;
 let isDragAction = false;
 const brightColors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9", "#DCEDC8", "#F0F4C3", "#FFF9C4", "#FFECB3", "#FFE0B2", "#FFCCBC", "#D7CCC8", "#F5F5F5", "#CFD8DC"];
 
-// 마지막 채팅 읽은 시간
 let lastChatReadTime = Number(localStorage.getItem('lastChatReadTime')) || Date.now();
 
-// 알림 권한 수동 요청 함수
-function requestNotificationPermission() {
-    if (!("Notification" in window)) {
-        alert("이 기기는 알림을 지원하지 않습니다.");
-        return;
-    }
-    
-    Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-            const btn = document.getElementById('noti-btn');
-            if(btn) btn.style.display = 'none';
-            
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.ready.then(function(registration) {
-                    registration.showNotification("알림이 설정되었습니다!", {
-                        body: "이제 새로운 메시지와 기도제목 알림을 받습니다.",
-                        icon: 'icon-192.png',
-                        vibrate: [200]
-                    });
-                });
-            }
-        } else {
-            alert("알림 권한이 거부되었습니다. 휴대폰 설정에서 권한을 켜주세요.");
+// ==========================================
+// ★ [핵심] 알림 토글 기능 (켜기/끄기)
+// ==========================================
+function toggleNotification() {
+    // 1. 현재 켜져있다면 -> 끄기
+    if (isNotiEnabled) {
+        isNotiEnabled = false;
+        localStorage.setItem('isNotiEnabled', 'false');
+        updateNotiButtonUI();
+        alert("알림이 해제되었습니다. 🔕");
+    } 
+    // 2. 현재 꺼져있다면 -> 켜기 (권한 확인 필요)
+    else {
+        if (!("Notification" in window)) {
+            return alert("이 기기는 알림을 지원하지 않습니다.");
         }
-    });
+        
+        if (Notification.permission === "granted") {
+            // 이미 권한 있으면 바로 켜기
+            enableNotification();
+        } else if (Notification.permission !== "denied") {
+            // 권한 없으면 요청
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") enableNotification();
+                else alert("알림 권한이 거부되었습니다.");
+            });
+        } else {
+            alert("알림 권한이 차단되어 있습니다. 설정에서 풀어주세요.");
+        }
+    }
 }
 
-function checkInitialPermission() {
-    if (Notification.permission === "granted") {
-        const btn = document.getElementById('noti-btn');
-        if(btn) btn.style.display = 'none';
+function enableNotification() {
+    isNotiEnabled = true;
+    localStorage.setItem('isNotiEnabled', 'true');
+    updateNotiButtonUI();
+    
+    // 테스트 알림
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification("알림 설정 완료!", {
+                body: "이제부터 알림을 받아보세요.",
+                icon: 'icon-192.png',
+                vibrate: [100]
+            });
+        });
     }
 }
-setTimeout(checkInitialPermission, 1000);
+
+// 버튼 모양 업데이트 함수
+function updateNotiButtonUI() {
+    const btn = document.getElementById('noti-btn');
+    if (!btn) return;
+    
+    if (isNotiEnabled) {
+        btn.innerText = "🔕 알림 끄기";
+        btn.style.backgroundColor = "#FFCDD2"; // 붉은색 계열 (끄기 유도)
+        btn.style.borderColor = "#EF9A9A";
+    } else {
+        btn.innerText = "🔔 알림 켜기";
+        btn.style.backgroundColor = "#FFF3E0"; // 노란색 계열 (켜기 유도)
+        btn.style.borderColor = "#FF9800";
+    }
+}
+
+// 초기 로딩 시 버튼 상태 동기화
+setTimeout(updateNotiButtonUI, 500);
+
 
 function setAppBadge(count) {
     if ('setAppBadge' in navigator) {
@@ -284,7 +318,7 @@ membersRef.on('child_added', (snap) => {
     }
 });
 
-// ★ [수정] 기도제목/답글 업데이트 감지 및 알림 발송
+// 기도제목/답글 알림 (isNotiEnabled 체크 추가)
 membersRef.on('child_changed', (snap) => {
     if(!isDataLoaded) return;
     const val = snap.val();
@@ -292,8 +326,6 @@ membersRef.on('child_changed', (snap) => {
     
     if(idx !== -1) {
         const oldMember = members[idx];
-        
-        // 이전 데이터와 새 데이터의 기도 갯수 비교
         const getCount = (m) => {
             let t = m.prayers ? m.prayers.length : 0;
             if(m.prayers) m.prayers.forEach(p => { if(p.replies) t += p.replies.length });
@@ -302,8 +334,8 @@ membersRef.on('child_changed', (snap) => {
         const oldTotal = getCount(oldMember);
         const newTotal = getCount(val);
 
-        // 갯수가 늘어났고, 첫 로딩이 아니라면 알림 발송
-        if (!isFirstRender && newTotal > oldTotal) {
+        // ★ [수정] 사용자가 알림을 켰을 때만(isNotiEnabled) 알림 발송
+        if (!isFirstRender && newTotal > oldTotal && isNotiEnabled) {
              if (document.hidden && Notification.permission === "granted" && 'serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(reg => {
                     reg.showNotification("🙏 새로운 기도나눔", {
@@ -316,7 +348,6 @@ membersRef.on('child_changed', (snap) => {
              }
         }
 
-        // 데이터 업데이트
         Object.assign(members[idx], { 
             ...val, 
             firebaseKey: snap.key, 
@@ -542,6 +573,7 @@ function toggleChatPopup() {
         lastChatReadTime = Date.now();
         localStorage.setItem('lastChatReadTime', lastChatReadTime);
         
+        // 권한 있으면 버튼 숨김
         if (Notification.permission === "granted") {
             const btn = document.getElementById('noti-btn');
             if(btn) btn.style.display = 'none';
@@ -758,7 +790,7 @@ function sendChatMessage() { const t = document.getElementById("chat-msg").value
 function deleteChatMessage(k) { if(confirm("관리자 삭제?")) messagesRef.child(k).remove(); }
 
 // ==========================================
-// ★ [수정됨] 갤럭시/안드로이드 앱 알림 로직
+// ★ [수정됨] 메시지 수신 시 알림 + 토글 체크
 // ==========================================
 messagesRef.limitToLast(50).on('child_added', snap => {
     const d = snap.val();
@@ -774,8 +806,8 @@ messagesRef.limitToLast(50).on('child_added', snap => {
             // 2. 앱 아이콘 숫자 배지
             setAppBadge(unreadChatKeys.size); 
             
-            // 3. ★ [핵심] 서비스 워커에게 '알림 보여줘!' 요청하기
-            if (document.hidden && Notification.permission === "granted" && 'serviceWorker' in navigator) {
+            // 3. ★ [핵심] 서비스 워커에게 '알림 보여줘!' 요청하기 (isNotiEnabled 체크!)
+            if (isNotiEnabled && document.hidden && Notification.permission === "granted" && 'serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(function(registration) {
                     registration.showNotification("새로운 기도/채팅 메시지", {
                         body: d.text,
