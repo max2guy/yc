@@ -10,7 +10,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=7">
     
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -99,7 +99,7 @@
             <div class="popup-header">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <h2 style="margin:0;">소통방</h2>
-                    <button id="noti-btn" onclick="requestNotificationPermission()" style="border:1px solid #FF9800; background:#FFF3E0; border-radius:15px; padding:4px 8px; font-size:0.8rem; cursor:pointer;">🔔 알림 켜기</button>
+                    <button id="noti-btn" onclick="toggleNotification()" style="border:1px solid #FF9800; background:#FFF3E0; border-radius:15px; padding:4px 8px; font-size:0.8rem; cursor:pointer; font-weight:bold;">🔔 알림 켜기</button>
                 </div>
                 <button class="close-btn" onclick="toggleChatPopup()">&times;</button>
             </div>
@@ -166,6 +166,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=5"></script>
+    <script src="script.js?v=7"></script>
 </body>
 </html>
