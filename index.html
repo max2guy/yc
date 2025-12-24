@@ -10,7 +10,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="style.css?v=12">
     
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -51,7 +51,6 @@
         <button class="float-btn sub-btn add-member-btn" onclick="event.stopPropagation(); addNewMember()" title="사람 추가">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </button>
-        <button class="float-btn sub-btn refresh-btn" onclick="event.stopPropagation(); forceRefresh()" title="새로고침">🔄</button>
     </div>
 
     <button class="chat-btn float-btn" onclick="event.stopPropagation(); toggleChatPopup()">
@@ -183,6 +182,11 @@
                 </div>
 
                 <div class="settings-item">
+                    <div class="settings-label">🔄 데이터 초기화</div>
+                    <button class="setting-action-btn" onclick="forceRefresh()">새로고침</button>
+                </div>
+
+                <div class="settings-item">
                     <div class="settings-label">🔒 관리자 모드</div>
                     <label class="switch">
                         <input type="checkbox" id="setting-admin-toggle" onchange="handleAdminToggle(this)">
@@ -192,11 +196,11 @@
             </div>
             
             <div style="text-align:center; margin-top:20px; color:#aaa; font-size:0.8rem;">
-                버전 1.0 (PWA)
+                버전 1.2 (PWA Reset)
             </div>
         </div>
     </div>
 
-    <script src="script.js?v=8"></script>
+    <script src="script.js?v=12"></script>
 </body>
 </html>
