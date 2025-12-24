@@ -213,11 +213,9 @@ let centerNode = { id: "center", name: "연천장로교회\n청년부\n함께 �
 let members = [];
 let isDataLoaded = false;
 
+// [수정] loadData 함수: 3초 인위적 딜레이(setTimeout) 제거
 function loadData() {
-    setTimeout(() => {
-        document.getElementById('loading').classList.add('hide');
-        if (!isDataLoaded) { updateGraph(); fetchWeather(); }
-    }, 3000);
+    // 3초 딜레이 제거됨. 데이터가 오면 바로 로딩창 닫음.
 
     Promise.all([membersRef.once('value'), centerNodeRef.once('value')])
     .then(([mSnap, cSnap]) => {
@@ -232,6 +230,7 @@ function loadData() {
         });
 
         isDataLoaded = true;
+        // 데이터가 준비되면 즉시 로딩 화면 끄기
         document.getElementById('loading').classList.add('hide');
         updateGraph(); 
         fetchWeather();
@@ -239,6 +238,7 @@ function loadData() {
     })
     .catch(err => {
         console.log("Firebase Load Error:", err);
+        // 에러가 나더라도 로딩 화면이 계속 돌지 않게 끔
         document.getElementById('loading').classList.add('hide'); 
         updateGraph(); 
     });
