@@ -786,6 +786,7 @@ messagesRef.limitToLast(50).on('child_added', snap => {
                         body: d.text,
                         icon: 'icon-192.png',
                         tag: 'prayer-chat',
+                        renotify: true,  // [핵심] 같은 알림이라도 진동/소리를 다시 울리게 함
                         vibrate: [200, 100, 200]
                     });
                 });
@@ -839,3 +840,4 @@ function gameLoop(timestamp) {
 }
 resizeWeatherCanvas();
 requestAnimationFrame(gameLoop);
+
