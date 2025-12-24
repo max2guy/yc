@@ -1,11 +1,14 @@
 {
   "name": "연천장로교회 청년부",
   "short_name": "함께기도해요",
+  "description": "연천장로교회 청년부 기도 제목 공유 및 실시간 소통 네트워크",
+  "id": "/index.html",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#FFF3E0",
   "theme_color": "#FFF3E0",
-  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "icon-192.png",
@@ -31,5 +34,9 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "categories": ["lifestyle", "social", "religious"],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }
