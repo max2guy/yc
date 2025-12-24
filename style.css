@@ -26,7 +26,7 @@ body {
     user-select: none;
 }
 
-/* [1-a] 버튼 터치 반응성 개선 (더블탭 방지 등) */
+/* [1-a] 버튼 터치 반응성 개선 */
 button, .float-btn, .prayer-card {
     touch-action: manipulation;
     user-select: none;
@@ -62,11 +62,8 @@ button, .float-btn, .prayer-card {
     box-shadow: 0 3px 8px rgba(141, 110, 99, 0.15);
     backdrop-filter: blur(5px);
     white-space: nowrap;
-    /* [1-a] 버튼 애니메이션 부드럽게 */
     transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
-/* [1-a] 버튼 클릭 시 쫀쫀한 느낌 (Scale) */
 .camp-btn:active, .float-btn:active, .prayer-send-btn:active, .chat-send-btn:active {
     transform: scale(0.92) !important;
 }
@@ -85,7 +82,7 @@ button, .float-btn, .prayer-card {
 /* --- Floating Buttons --- */
 .float-btn {
     cursor: pointer; 
-    transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); /* [1-a] */
+    transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); 
     box-shadow: 0 4px 10px rgba(141, 110, 99, 0.2); border: none;
     width: 50px !important; height: 50px !important; 
     border-radius: 50% !important; padding: 0 !important; margin: 0 !important;
@@ -200,13 +197,13 @@ button, .float-btn, .prayer-card {
 .prayer-input-row { display: flex; gap: 8px; align-items: center; }
 #new-prayer { flex: 1; padding: 10px 15px; border: 2px solid #FFE0B2; border-radius: 20px; font-size: 0.9rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
 #new-prayer:focus { border-color: #8D6E63; }
-/* [1-a] 전송 버튼 애니메이션 */
+
 .prayer-send-btn { 
     width: 44px; height: 44px; border-radius: 50%; border: none; 
     background: linear-gradient(135deg, #8D6E63, #6D4C41); color: white; 
     cursor: pointer; display: flex; align-items: center; justify-content: center; 
     box-shadow: 0 2px 8px rgba(141, 110, 99, 0.3); 
-    transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); /* [1-a] */
+    transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .prayer-send-btn:hover { transform: scale(1.05); }
 
@@ -236,13 +233,12 @@ button, .float-btn, .prayer-card {
 .chat-sender { font-size: 0.75rem; color: #8D6E63; margin-bottom: 2px; margin-left: 5px; }
 .chat-input-area { padding: 10px; border-top: 2px solid #FFE0B2; display: flex; gap: 8px; background: #fff; align-items: center; }
 #chat-msg { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; font-size: 1rem; }
-/* [1-a] 채팅 전송 버튼 애니메이션 */
 .chat-send-btn { 
     background: var(--main-node-color); color: white; border: none; 
     border-radius: 20px; padding: 0 20px; font-weight: bold; cursor: pointer; 
     height: 40px; white-space: nowrap; min-width: 60px; 
     display: flex; align-items: center; justify-content: center;
-    transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); /* [1-a] */
+    transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .admin-delete-chat { font-size: 0.7rem; color: red; cursor: pointer; margin-left: 5px; font-weight: bold; display: none; }
@@ -346,26 +342,17 @@ button, .float-btn, .prayer-card {
 .btn-save { background: linear-gradient(to right, #8D6E63, #6D4C41); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 .btn-reset { background: #EFEBE9; color: #5D4037; border: 1px solid #D7CCC8; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-/* [추가] 고정된 게시글 스타일 */
+/* Pinned Post Styles */
 .prayer-card.pinned {
-    background-color: #FFFDE7; /* 밝은 노란색 배경 */
-    border: 2px solid #FFD54F; /* 진한 노란색 테두리 */
-    border-left: 6px solid #FFC107; /* 왼쪽 포인트 컬러 */
+    background-color: #FFFDE7;
+    border: 2px solid #FFD54F;
+    border-left: 6px solid #FFC107;
     box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
     margin-bottom: 15px;
 }
+.pinned-icon { margin-right: 6px; font-size: 1.1rem; vertical-align: middle; color: #FF8F00; }
 
-/* [추가] 고정 핀 아이콘 스타일 */
-.pinned-icon {
-    margin-right: 6px; 
-    font-size: 1.1rem; 
-    vertical-align: middle; 
-    color: #FF8F00; 
-}
-
-/* ========================================================= */
-/* [1-b] 앱 설치 유도 바텀 시트 (Bottom Sheet) 디자인 추가 */
-/* ========================================================= */
+/* [1-b] Install Banner */
 .install-banner {
     position: fixed; bottom: -120px; left: 20px; right: 20px;
     background: rgba(255, 255, 255, 0.95);
@@ -377,7 +364,7 @@ button, .float-btn, .prayer-card {
     transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     z-index: 9999;
 }
-.install-banner.show { bottom: 30px; } /* safe-area 고려하여 띄움 */
+.install-banner.show { bottom: 30px; }
 .install-text { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; color: #5D4037; line-height: 1.4; }
 .app-icon-small { font-size: 1.8rem; background: #FFF3E0; padding: 6px; border-radius: 12px; }
 .install-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
@@ -387,3 +374,26 @@ button, .float-btn, .prayer-card {
 @media (max-width: 768px) {
     .install-banner.show { bottom: calc(20px + env(safe-area-inset-bottom)); }
 }
+
+/* ========================================================= */
+/* [3] Skeleton UI (스켈레톤 로딩 애니메이션) */
+/* ========================================================= */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+.skeleton-card {
+    background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-left: 4px solid #eee;
+}
+.sk-text { height: 14px; width: 80%; }
+.sk-text-sm { height: 10px; width: 40%; margin-bottom: 12px; }
+.sk-block { height: 60px; width: 100%; margin-top:10px; }
