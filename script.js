@@ -1,5 +1,5 @@
 // ==========================================
-// 연천장로교회 청년부 기도 네트워크 (Final Fix)
+// 연천장로교회 청년부 기도 네트워크 (Final Fix + Pin)
 // ==========================================
 
 // 1. 서비스 워커 등록
@@ -587,26 +587,102 @@ function saveProfileChanges() {
 
 function createSafeElement(tag, className, text) { const el = document.createElement(tag); if (className) el.className = className; if (text) el.textContent = text; return el; }
 
+// ==========================================
+// [수정] 기도제목 렌더링 함수 (고정 기능 + 아이콘)
+// ==========================================
 function renderPrayers() {
-    const list = document.getElementById("prayer-list"); list.innerHTML = "";
-    if(!currentMemberData || !currentMemberData.prayers) { list.innerHTML = "<p style='text-align:center; margin-top:20px;'>기도제목을 나눠주세요!</p>"; return; }
-    currentMemberData.prayers.forEach((p, i) => {
+    const list = document.getElementById("prayer-list"); 
+    list.innerHTML = "";
+    
+    if(!currentMemberData || !currentMemberData.prayers) { 
+        list.innerHTML = "<p style='text-align:center; margin-top:20px;'>기도제목을 나눠주세요!</p>"; 
+        return; 
+    }
+
+    // 1. 원본 인덱스 기억 & 배열 복사
+    const displayList = currentMemberData.prayers.map((p, index) => ({
+        ...p,
+        originalIndex: index
+    }));
+
+    // 2. 고정된 글(isPinned) 맨 위로 정렬
+    displayList.sort((a, b) => {
+        return (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0);
+    });
+
+    // 3. 화면에 그리기
+    displayList.forEach((p) => {
+        const i = p.originalIndex;
         const div = createSafeElement("div", "prayer-card");
+        if (p.isPinned) div.classList.add("pinned"); // 스타일용 클래스 추가
+
         const header = createSafeElement("div", "prayer-header");
+        
+        // [핵심 수정] 날짜와 아이콘을 담을 래퍼(Wrapper) 생성
+        const dateWrapper = createSafeElement("div");
+        dateWrapper.style.display = "flex";
+        dateWrapper.style.alignItems = "center";
+
+        // 고정된 글이면 아이콘 span 추가
+        if (p.isPinned) {
+            const pinIcon = createSafeElement("span", "pinned-icon", "📌");
+            dateWrapper.appendChild(pinIcon);
+        }
+
+        // 날짜 span 추가
         const dateSpan = createSafeElement("span", "", p.date);
-        header.appendChild(dateSpan);
+        dateWrapper.appendChild(dateSpan);
+        
+        header.appendChild(dateWrapper);
+
         const content = createSafeElement("div", "prayer-content", p.content);
         const actionGroup = createSafeElement("div", "action-group");
+        
         let delBtnHtml = `<button class="text-btn" onclick="deletePrayer(${i})">삭제</button>`;
         if(isAdmin) delBtnHtml = `<button class="text-btn admin-delete-btn" onclick="adminDeletePrayer(${i})">강제삭제</button>`;
-        actionGroup.innerHTML = `<button class="text-btn" onclick="editPrayer(${i})">수정</button>${delBtnHtml}<button class="text-btn" onclick="addReply(${i})">답글</button>`;
-        div.appendChild(header); div.appendChild(content); div.appendChild(actionGroup);
+        
+        // 고정/해제 버튼 라벨
+        const pinLabel = p.isPinned ? "해제" : "고정";
+        
+        actionGroup.innerHTML = `
+            <button class="text-btn" onclick="togglePin(${i})" style="color:#FF9800; font-weight:bold;">${pinLabel}</button>
+            <button class="text-btn" onclick="editPrayer(${i})">수정</button>
+            ${delBtnHtml}
+            <button class="text-btn" onclick="addReply(${i})">답글</button>
+        `;
+        
+        div.appendChild(header); 
+        div.appendChild(content); 
+        div.appendChild(actionGroup);
+
         if (p.replies) {
             const replySection = createSafeElement("div", "reply-section");
-            p.replies.forEach(r => { const rItem = createSafeElement("div", "reply-item", "💬 " + r.content); replySection.appendChild(rItem); });
+            p.replies.forEach(r => { 
+                const rItem = createSafeElement("div", "reply-item", "💬 " + r.content); 
+                replySection.appendChild(rItem); 
+            });
             div.appendChild(replySection);
         }
         list.appendChild(div);
+    });
+}
+
+// ==========================================
+// [신규] 게시글 고정/해제 토글 함수
+// ==========================================
+function togglePin(index) {
+    if (!currentMemberData) return;
+    
+    // 현재 상태 반대로 뒤집기 (true <-> false)
+    const currentState = currentMemberData.prayers[index].isPinned || false;
+    currentMemberData.prayers[index].isPinned = !currentState;
+
+    // DB에 저장
+    membersRef.child(currentMemberData.firebaseKey).update({
+        prayers: currentMemberData.prayers
+    }).then(() => {
+        // 화면 즉시 갱신
+        renderPrayers();
     });
 }
 
