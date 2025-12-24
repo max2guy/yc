@@ -1,5 +1,5 @@
 // ==========================================
-// 연천장로교회 청년부 기도 네트워크 (Final + Profile + Badge)
+// 연천장로교회 청년부 기도 네트워크 (Final Update)
 // ==========================================
 
 // 1. 기본 설정 및 서비스 워커
@@ -77,7 +77,6 @@ let readStatus = {};
 let newMemberIds = new Set();
 let globalNodes = [];
 let simulation = null;
-const loadTime = Date.now();
 let unreadChatKeys = new Set();
 let touchStartTime = 0;
 let touchStartX = 0;
@@ -88,8 +87,11 @@ let dragStartY = 0;
 let isDragAction = false;
 const brightColors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9", "#DCEDC8", "#F0F4C3", "#FFF9C4", "#FFECB3", "#FFE0B2", "#FFCCBC", "#D7CCC8", "#F5F5F5", "#CFD8DC"];
 
+// ★ [수정] 마지막으로 읽은 시간 기억하기 (앱 껐다 켜도 유지됨)
+let lastChatReadTime = Number(localStorage.getItem('lastChatReadTime')) || Date.now();
+
 // ==========================================
-// [신규] 앱 아이콘 뱃지 관리 (Badging API)
+// 앱 아이콘 뱃지 관리 (Badging API)
 // ==========================================
 function setAppBadge(count) {
     if ('setAppBadge' in navigator) {
@@ -286,7 +288,7 @@ function updateGraph() {
     globalNodes = [centerNode, ...members];
     const links = members.map(m => ({ source: centerNode.id, target: m.id }));
 
-    // 패턴 (이미지 채우기용)
+    // 패턴
     const patterns = defs.selectAll("pattern").data(members, d => d.id);
     patterns.enter().append("pattern")
         .attr("id", d => "img-" + d.id).attr("width", 1).attr("height", 1).attr("patternContentUnits", "objectBoundingBox")
@@ -294,7 +296,7 @@ function updateGraph() {
     patterns.select("image").attr("xlink:href", d => d.photoUrl);
     patterns.exit().remove();
 
-    // 연결선
+    // 선
     link = linkGroup.selectAll("line").data(links, d => d.target.id || d.target);
     link.exit().remove();
     
@@ -454,14 +456,19 @@ window.addEventListener("resize", () => { const w = window.innerWidth; const h =
 let currentMemberData = null;
 function toggleCampPopup() { document.getElementById('camp-popup').classList.toggle('active'); }
 
-// 채팅 팝업 토글 (배지 초기화 로직 포함)
+// ★ [수정] 채팅 팝업 열 때 읽음 처리 및 배지 초기화
 function toggleChatPopup() { 
     const el = document.getElementById('chat-popup'); 
     el.classList.toggle('active'); 
     if(el.classList.contains('active')) {
-        document.getElementById('chat-badge').classList.remove('active');
+        document.getElementById('chat-badge').classList.remove('active'); // 내부 빨간 점 제거
         unreadChatKeys.clear(); 
-        setAppBadge(0); // 앱 뱃지 초기화
+        setAppBadge(0); // 앱 아이콘 배지 제거
+
+        // 읽은 시간 갱신 및 저장
+        lastChatReadTime = Date.now();
+        localStorage.setItem('lastChatReadTime', lastChatReadTime);
+
         setTimeout(() => document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight, 100);
     }
 }
@@ -513,34 +520,25 @@ function addNewMember() { const n = prompt("이름:"); if(n && n.trim()) { if(co
 function updateMemberColor(v) { if(currentMemberData) membersRef.child(currentMemberData.firebaseKey).update({color: v}); }
 function deleteMember() { if(currentMemberData && confirm("삭제하시겠습니까?")) { membersRef.child(currentMemberData.firebaseKey).remove(); closePrayerPopup(); }}
 
-// ==========================================
 // 프로필 편집 기능 (사진 업로드 포함)
-// ==========================================
 let tempProfileImage = "";
 
 function editProfile() {
     if (!currentMemberData) return;
-    
-    // 모달에 현재 정보 채우기
     document.getElementById('edit-profile-name').value = currentMemberData.name;
     const currentImg = currentMemberData.photoUrl || "https://via.placeholder.com/150?text=No+Image";
     document.getElementById('edit-profile-preview').src = currentImg;
-    
     tempProfileImage = currentMemberData.photoUrl || "";
     document.getElementById('profile-edit-modal').classList.add('active');
 }
 
-function closeProfileEditModal() {
-    document.getElementById('profile-edit-modal').classList.remove('active');
-}
+function closeProfileEditModal() { document.getElementById('profile-edit-modal').classList.remove('active'); }
 
 function handleProfileFileSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    
     reader.onload = function(e) {
         const img = new Image();
         img.src = e.target.result;
@@ -549,18 +547,11 @@ function handleProfileFileSelect(event) {
             const ctx = canvas.getContext('2d');
             const Size = 300; 
             canvas.width = Size; canvas.height = Size;
-
             let sx, sy, sWidth, sHeight;
-            if (img.width > img.height) {
-                sHeight = img.height; sWidth = img.height; 
-                sx = (img.width - img.height) / 2; sy = 0;
-            } else {
-                sWidth = img.width; sHeight = img.width; 
-                sx = 0; sy = (img.height - img.width) / 2; 
-            }
+            if (img.width > img.height) { sHeight = img.height; sWidth = img.height; sx = (img.width - img.height) / 2; sy = 0; }
+            else { sWidth = img.width; sHeight = img.width; sx = 0; sy = (img.height - img.width) / 2; }
             ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, Size, Size);
             const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-            
             document.getElementById('edit-profile-preview').src = dataUrl;
             tempProfileImage = dataUrl;
         };
@@ -572,7 +563,6 @@ function saveProfileChanges() {
     const newName = document.getElementById('edit-profile-name').value.trim();
     if (!newName) return alert("이름을 입력해주세요.");
     if (containsBannedWords(newName)) return alert("부적절한 이름입니다.");
-
     const updates = { name: newName, photoUrl: tempProfileImage };
     membersRef.child(currentMemberData.firebaseKey).update(updates).then(() => {
         document.getElementById("panel-name").innerText = newName;
@@ -580,18 +570,11 @@ function saveProfileChanges() {
     });
 }
 
-function createSafeElement(tag, className, text) {
-    const el = document.createElement(tag);
-    if (className) el.className = className;
-    if (text) el.textContent = text;
-    return el;
-}
+function createSafeElement(tag, className, text) { const el = document.createElement(tag); if (className) el.className = className; if (text) el.textContent = text; return el; }
 
 function renderPrayers() {
-    const list = document.getElementById("prayer-list"); 
-    list.innerHTML = "";
+    const list = document.getElementById("prayer-list"); list.innerHTML = "";
     if(!currentMemberData || !currentMemberData.prayers) { list.innerHTML = "<p style='text-align:center; margin-top:20px;'>기도제목을 나눠주세요!</p>"; return; }
-
     currentMemberData.prayers.forEach((p, i) => {
         const div = createSafeElement("div", "prayer-card");
         const header = createSafeElement("div", "prayer-header");
@@ -599,13 +582,10 @@ function renderPrayers() {
         header.appendChild(dateSpan);
         const content = createSafeElement("div", "prayer-content", p.content);
         const actionGroup = createSafeElement("div", "action-group");
-        
         let delBtnHtml = `<button class="text-btn" onclick="deletePrayer(${i})">삭제</button>`;
         if(isAdmin) delBtnHtml = `<button class="text-btn admin-delete-btn" onclick="adminDeletePrayer(${i})">강제삭제</button>`;
-        
         actionGroup.innerHTML = `<button class="text-btn" onclick="editPrayer(${i})">수정</button>${delBtnHtml}<button class="text-btn" onclick="addReply(${i})">답글</button>`;
         div.appendChild(header); div.appendChild(content); div.appendChild(actionGroup);
-
         if (p.replies) {
             const replySection = createSafeElement("div", "reply-section");
             p.replies.forEach(r => { const rItem = createSafeElement("div", "reply-item", "💬 " + r.content); replySection.appendChild(rItem); });
@@ -615,21 +595,8 @@ function renderPrayers() {
     });
 }
 
-function deletePrayer(i) {
-    if(confirm("정말 삭제하시겠습니까?")) {
-        currentMemberData.prayers.splice(i, 1); renderPrayers(); 
-        const updateData = currentMemberData.prayers.length > 0 ? currentMemberData.prayers : [];
-        membersRef.child(currentMemberData.firebaseKey).update({prayers: updateData});
-    }
-}
-function adminDeletePrayer(i) { 
-    if(confirm("관리자 권한으로 삭제하시겠습니까?")) { 
-        currentMemberData.prayers.splice(i,1); renderPrayers();
-        const updateData = currentMemberData.prayers.length > 0 ? currentMemberData.prayers : [];
-        membersRef.child(currentMemberData.firebaseKey).update({prayers: updateData}); 
-    } 
-}
-
+function deletePrayer(i) { if(confirm("정말 삭제하시겠습니까?")) { currentMemberData.prayers.splice(i, 1); renderPrayers(); const updateData = currentMemberData.prayers.length > 0 ? currentMemberData.prayers : []; membersRef.child(currentMemberData.firebaseKey).update({prayers: updateData}); } }
+function adminDeletePrayer(i) { if(confirm("관리자 권한으로 삭제하시겠습니까?")) { currentMemberData.prayers.splice(i,1); renderPrayers(); const updateData = currentMemberData.prayers.length > 0 ? currentMemberData.prayers : []; membersRef.child(currentMemberData.firebaseKey).update({prayers: updateData}); } }
 function addPrayer() { const v = document.getElementById("new-prayer").value.trim(); if(v) { if(containsBannedWords(v)) return alert("부적절한 내용"); const p = currentMemberData.prayers||[]; p.unshift({content:v, date:new Date().toISOString().split('T')[0]}); membersRef.child(currentMemberData.firebaseKey).update({prayers:p}); document.getElementById("new-prayer").value=""; } }
 function editPrayer(i) { const v = prompt("수정:", currentMemberData.prayers[i].content); if(v) { if(containsBannedWords(v)) return alert("부적절한 내용"); currentMemberData.prayers[i].content = v; membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); } }
 function addReply(i) { const v = prompt("답글:"); if(v) { if(containsBannedWords(v)) return alert("부적절한 내용"); if(!currentMemberData.prayers[i].replies) currentMemberData.prayers[i].replies=[]; currentMemberData.prayers[i].replies.push({content:v}); membersRef.child(currentMemberData.firebaseKey).update({prayers:currentMemberData.prayers}); } }
@@ -639,14 +606,20 @@ function deleteChatMessage(k) { if(confirm("관리자 삭제?")) messagesRef.chi
 
 messagesRef.limitToLast(50).on('child_added', snap => {
     const d = snap.val();
-    if (d.timestamp > loadTime && d.senderId !== mySessionId) {
+    
+    // ★ [수정] 마지막으로 읽은 시간(lastChatReadTime) 이후에 온 메시지만 알림 처리
+    if (d.timestamp > lastChatReadTime && d.senderId !== mySessionId) {
         unreadChatKeys.add(snap.key);
         const popup = document.getElementById('chat-popup');
+        
         if (!popup.classList.contains('active')) { 
+            // 1. 화면 내 빨간 점 표시
             document.getElementById('chat-badge').classList.add('active'); 
-            setAppBadge(unreadChatKeys.size); // 앱 아이콘에 숫자 뱃지 설정
+            // 2. 앱 아이콘 숫자 배지 표시
+            setAppBadge(unreadChatKeys.size); 
         }
     }
+
     const isMine = d.senderId === mySessionId;
     const div = document.createElement("div"); div.className = "chat-bubble-wrapper"; div.setAttribute('data-key', snap.key);
     div.style.display="flex"; div.style.flexDirection="column"; div.style.alignItems=isMine?"flex-end":"flex-start";
@@ -659,7 +632,7 @@ messagesRef.limitToLast(50).on('child_added', snap => {
 messagesRef.on('child_removed', snap => { 
     const el = document.querySelector(`.chat-bubble-wrapper[data-key="${snap.key}"]`); 
     if(el) el.remove(); 
-    if(unreadChatKeys.has(snap.key)) { unreadChatKeys.delete(snap.key); if(unreadChatKeys.size === 0) { document.getElementById('chat-badge').classList.remove('active'); } }
+    if(unreadChatKeys.has(snap.key)) { unreadChatKeys.delete(snap.key); if(unreadChatKeys.size === 0) { document.getElementById('chat-badge').classList.remove('active'); setAppBadge(0); } }
 });
 
 // 날씨 및 게임 루프
