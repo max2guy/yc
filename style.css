@@ -455,3 +455,30 @@ button, .float-btn, .icon-btn {
 .sk-text { height: 14px; width: 80%; }
 .sk-text-sm { height: 10px; width: 40%; margin-bottom: 12px; }
 .sk-block { height: 60px; width: 100%; margin-top:10px; }
+
+/* [추가] 답글 삭제 버튼 (X 표시) 스타일 */
+.reply-delete-btn {
+    margin-left: auto; /* 버튼을 오른쪽 끝으로 밀어냄 */
+    background: none;
+    border: none;
+    color: #ccc; /* 평소엔 연한 회색 */
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.reply-delete-btn:hover {
+    color: #ef5350; /* 호버 시 빨간색 */
+}
+
+/* 기존 reply-item에 정렬 속성 강화 */
+.reply-item {
+    /* 기존 속성 유지 */
+    display: flex; 
+    gap: 8px; 
+    align-items: flex-start; /* 텍스트가 길어도 상단 정렬 */
+}
