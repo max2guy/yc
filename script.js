@@ -1,5 +1,5 @@
 // ==========================================
-// 연천장로교회 청년부 기도 네트워크 (Final Update)
+// 연천장로교회 청년부 기도 네트워크 (Final Complete)
 // ==========================================
 
 // 1. 기본 설정 및 서비스 워커
@@ -15,6 +15,32 @@ if ('serviceWorker' in navigator) {
         });
     }, function(err) { console.log('SW Fail: ', err); });
 }
+
+// ★ [복구됨] PWA 설치 프롬프트 로직 ★
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const installBtn = document.getElementById('installBtn');
+    if (installBtn) {
+        installBtn.style.display = 'block'; // 버튼 보이게 하기
+        installBtn.onclick = () => {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((result) => {
+                if (result.outcome === 'accepted') {
+                    installBtn.style.display = 'none';
+                }
+                deferredPrompt = null;
+            });
+        };
+    }
+});
+
+window.addEventListener('appinstalled', () => {
+    const installBtn = document.getElementById('installBtn');
+    if(installBtn) installBtn.style.display = 'none';
+    deferredPrompt = null;
+});
 
 // UI 핸들러
 let isFabOpen = false;
@@ -77,6 +103,7 @@ let readStatus = {};
 let newMemberIds = new Set();
 let globalNodes = [];
 let simulation = null;
+const loadTime = Date.now();
 let unreadChatKeys = new Set();
 let touchStartTime = 0;
 let touchStartX = 0;
@@ -87,12 +114,10 @@ let dragStartY = 0;
 let isDragAction = false;
 const brightColors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9", "#DCEDC8", "#F0F4C3", "#FFF9C4", "#FFECB3", "#FFE0B2", "#FFCCBC", "#D7CCC8", "#F5F5F5", "#CFD8DC"];
 
-// ★ [수정] 마지막으로 읽은 시간 기억하기 (앱 껐다 켜도 유지됨)
+// 마지막 채팅 읽은 시간 (앱 뱃지용)
 let lastChatReadTime = Number(localStorage.getItem('lastChatReadTime')) || Date.now();
 
-// ==========================================
 // 앱 아이콘 뱃지 관리 (Badging API)
-// ==========================================
 function setAppBadge(count) {
     if ('setAppBadge' in navigator) {
         if (count > 0) {
@@ -456,16 +481,16 @@ window.addEventListener("resize", () => { const w = window.innerWidth; const h =
 let currentMemberData = null;
 function toggleCampPopup() { document.getElementById('camp-popup').classList.toggle('active'); }
 
-// ★ [수정] 채팅 팝업 열 때 읽음 처리 및 배지 초기화
+// 채팅 팝업 열 때 읽음 처리 및 배지 초기화
 function toggleChatPopup() { 
     const el = document.getElementById('chat-popup'); 
     el.classList.toggle('active'); 
     if(el.classList.contains('active')) {
-        document.getElementById('chat-badge').classList.remove('active'); // 내부 빨간 점 제거
+        document.getElementById('chat-badge').classList.remove('active'); 
         unreadChatKeys.clear(); 
-        setAppBadge(0); // 앱 아이콘 배지 제거
+        setAppBadge(0); // 뱃지 초기화
 
-        // 읽은 시간 갱신 및 저장
+        // 현재 시간 저장 (이후 메시지만 알림)
         lastChatReadTime = Date.now();
         localStorage.setItem('lastChatReadTime', lastChatReadTime);
 
@@ -520,7 +545,7 @@ function addNewMember() { const n = prompt("이름:"); if(n && n.trim()) { if(co
 function updateMemberColor(v) { if(currentMemberData) membersRef.child(currentMemberData.firebaseKey).update({color: v}); }
 function deleteMember() { if(currentMemberData && confirm("삭제하시겠습니까?")) { membersRef.child(currentMemberData.firebaseKey).remove(); closePrayerPopup(); }}
 
-// 프로필 편집 기능 (사진 업로드 포함)
+// 프로필 편집 기능
 let tempProfileImage = "";
 
 function editProfile() {
@@ -607,15 +632,13 @@ function deleteChatMessage(k) { if(confirm("관리자 삭제?")) messagesRef.chi
 messagesRef.limitToLast(50).on('child_added', snap => {
     const d = snap.val();
     
-    // ★ [수정] 마지막으로 읽은 시간(lastChatReadTime) 이후에 온 메시지만 알림 처리
+    // ★ [수정] 마지막 읽은 시간 이후 온 메시지만 카운트 (앱 켜기 전 메시지 포함 안 함)
     if (d.timestamp > lastChatReadTime && d.senderId !== mySessionId) {
         unreadChatKeys.add(snap.key);
         const popup = document.getElementById('chat-popup');
         
         if (!popup.classList.contains('active')) { 
-            // 1. 화면 내 빨간 점 표시
             document.getElementById('chat-badge').classList.add('active'); 
-            // 2. 앱 아이콘 숫자 배지 표시
             setAppBadge(unreadChatKeys.size); 
         }
     }
