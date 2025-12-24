@@ -97,6 +97,9 @@ body {
 .profile-wrapper { position: relative; width: 120px; height: 120px; margin: 0 auto; }
 #edit-profile-preview { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #FFE0B2; }
 .upload-btn { position: absolute; bottom: 5px; right: 5px; background-color: #8D6E63; color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid white; }
+.profile-name-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; text-align: center; }
+.btn-save { background: linear-gradient(to right, #8D6E63, #6D4C41); color: white; border: none; border-radius: 8px; font-weight: bold; padding: 10px; }
+.btn-reset { background: #EFEBE9; color: #5D4037; border: 1px solid #D7CCC8; border-radius: 8px; padding: 10px; }
 
 /* --- 설정창 스타일 --- */
 .settings-list { display: flex; flex-direction: column; gap: 15px; padding: 10px; }
@@ -114,7 +117,11 @@ input:checked + .slider:before { transform: translateX(22px); }
 .pinned-icon { margin-right: 6px; font-size: 1.1rem; color: #FF8F00; }
 @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-#prayer-list { flex-grow: 1; overflow-y: auto; padding: 12px; background: #fff; -webkit-overflow-scrolling: touch; }
-.text-btn { font-size: 0.85rem; background: none; border: none; cursor: pointer; color: #FF7043; font-weight: bold; padding: 4px 8px; transition: opacity 0.2s; }
+#prayer-list { flex-grow: 1; overflow-y: auto; padding: 12px; background: #fff; }
+.chat-messages { flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+.text-btn { font-size: 0.85rem; background: none; border: none; cursor: pointer; color: #FF7043; font-weight: bold; }
 .reply-section { margin-top: 10px; background-color: #FFF8E1; border-radius: 8px; padding: 10px; }
 .reply-item { font-size: 0.85rem; border-bottom: 1px dashed #FFE0B2; padding: 5px 0; color: #E65100; display: flex; justify-content: space-between; align-items: center; }
+
+.system-toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #333; color: white; padding: 12px 24px; border-radius: 30px; z-index: 10000; transition: transform 0.4s; opacity: 0; pointer-events: none; }
+.system-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
