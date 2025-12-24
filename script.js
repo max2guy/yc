@@ -765,4 +765,58 @@ if(wc) { wc.width = window.innerWidth; wc.height = window.innerHeight; }
 // 루프 시작
 requestAnimationFrame(gameLoop);
 updateNotiButtonUI();
+// ==========================================
+// Part 4: 누락된 데이터 로딩 및 앱 시작 (필수)
+// ==========================================
+
+function loadData() {
+    // 1. 로딩 화면 안전장치 (3초 후 강제 해제)
+    setTimeout(() => {
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl) loadingEl.classList.add('hide');
+        // 데이터 로드가 늦어져도 그래프 등은 그리도록 시도
+        if (!isDataLoaded && typeof updateGraph === "function") updateGraph();
+    }, 3000);
+
+    // 2. Firebase에서 데이터 가져오기
+    Promise.all([membersRef.once('value'), centerNodeRef.once('value')])
+    .then(([mSnap, cSnap]) => {
+        const mData = mSnap.val();
+        const cData = cSnap.val();
+        
+        if (mData) {
+            members = Object.keys(mData).map(key => ({ firebaseKey: key, ...mData[key] }));
+        }
+        if (cData && cData.icon) centerNode.icon = cData.icon;
+
+        // 로딩 완료 처리
+        isDataLoaded = true;
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl) loadingEl.classList.add('hide');
+        
+        // 시각화 및 날씨 초기화 (Part 3 함수 호출)
+        if (typeof updateGraph === "function") updateGraph();
+        if (typeof fetchWeather === "function") fetchWeather();
+        
+        isFirstRender = false;
+    }).catch(err => {
+        console.error("데이터 로드 중 오류:", err);
+        // 에러 나도 로딩창은 치워줌
+        document.getElementById('loading').classList.add('hide');
+    });
+}
+
+// 3. 실시간 데이터 동기화 리스너
+membersRef.on('value', snap => {
+    const data = snap.val();
+    if (data) {
+        members = Object.keys(data).map(key => ({ firebaseKey: key, ...data[key] }));
+        // 데이터가 바뀌면 그래프도 새로고침
+        if (isDataLoaded && typeof updateGraph === "function") updateGraph();
+    }
+});
+
+// 4. 앱 시작! (이게 없어서 멈춰 있었음)
+loadData();
 // --- v19 script.js 끝 ---
+
