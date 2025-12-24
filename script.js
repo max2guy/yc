@@ -1,5 +1,5 @@
 // ==========================================
-// 연천장로교회 청년부 기도 네트워크 (Final v10 - Layout Update)
+// 연천장로교회 청년부 기도 네트워크 (Final v11 - Delete Icon Style)
 // ==========================================
 
 // 1. 서비스 워커 등록
@@ -730,7 +730,7 @@ function saveProfileChanges() {
 function createSafeElement(tag, className, text) { const el = document.createElement(tag); if (className) el.className = className; if (text) el.textContent = text; return el; }
 
 // ==========================================
-// [수정] 기도제목 렌더링 함수 (레이아웃 대폭 수정)
+// [수정] 기도제목 렌더링 함수 (삭제 버튼 아이콘화)
 // ==========================================
 function renderPrayers() {
     const list = document.getElementById("prayer-list"); 
@@ -749,55 +749,49 @@ function renderPrayers() {
         const div = createSafeElement("div", "prayer-card");
         if (p.isPinned) div.classList.add("pinned"); 
 
-        // 1. [헤더] 고정/해제 버튼 - 날짜 - 수정 버튼
         const header = createSafeElement("div", "prayer-header");
         header.style.justifyContent = "space-between"; 
         header.style.alignItems = "center";
 
-        // 왼쪽 그룹 (고정버튼 + 날짜)
         const headerLeft = createSafeElement("div");
         headerLeft.style.display = "flex";
         headerLeft.style.alignItems = "center";
-        headerLeft.style.gap = "8px"; // 간격 조정
+        headerLeft.style.gap = "8px"; 
 
-        // 고정/해제 버튼 (텍스트 아이콘)
         const pinLabel = p.isPinned ? "📌 해제" : "📍 고정";
         const pinBtn = createSafeElement("button", "text-btn", pinLabel);
         pinBtn.onclick = () => togglePin(i);
         pinBtn.style.color = p.isPinned ? "#E65100" : "#aaa";
         headerLeft.appendChild(pinBtn);
 
-        // 날짜
         const dateSpan = createSafeElement("span", "", p.date);
         dateSpan.style.color = "#8D6E63";
         headerLeft.appendChild(dateSpan);
 
-        // 오른쪽 그룹 (수정 버튼)
         const editBtn = createSafeElement("button", "text-btn", "수정");
         editBtn.onclick = () => editPrayer(i);
-        editBtn.style.color = "#8D6E63"; // 갈색 톤
+        editBtn.style.color = "#8D6E63"; 
 
         header.appendChild(headerLeft);
         header.appendChild(editBtn);
 
-        // 2. [본문] 내용
         const content = createSafeElement("div", "prayer-content", p.content);
 
-        // 3. [푸터/액션그룹] 답글 - 삭제
         const actionGroup = createSafeElement("div", "action-group");
-        actionGroup.style.justifyContent = "space-between"; // 양끝 정렬
+        actionGroup.style.justifyContent = "space-between"; 
 
-        // 왼쪽: 답글 버튼
         const replyBtn = createSafeElement("button", "text-btn", "💬 답글");
         replyBtn.onclick = () => addReply(i);
-        replyBtn.style.color = "#FF7043"; // 주황색 톤
+        replyBtn.style.color = "#FF7043"; 
         replyBtn.style.fontWeight = "bold";
 
-        // 오른쪽: 삭제 버튼
-        let delBtnHtml = `<button class="text-btn" onclick="deletePrayer(${i})" style="color:#ef5350;">삭제</button>`;
-        if(isAdmin) delBtnHtml = `<button class="text-btn admin-delete-btn" onclick="adminDeletePrayer(${i})">강제삭제</button>`;
+        // ★ [수정됨] 삭제 버튼: "삭제" 글씨 대신 "×" 아이콘으로 변경
+        let delBtnHtml = `<button onclick="deletePrayer(${i})" style="border:none; background:none; color:#aaa; font-size:1.2rem; cursor:pointer;">&times;</button>`;
         
-        // innerHTML로 버튼 배치
+        if(isAdmin) {
+            delBtnHtml = `<button class="text-btn admin-delete-btn" onclick="adminDeletePrayer(${i})">강제삭제</button>`;
+        }
+        
         const rightGroup = document.createElement("div");
         rightGroup.innerHTML = delBtnHtml;
 
@@ -808,7 +802,6 @@ function renderPrayers() {
         div.appendChild(content); 
         div.appendChild(actionGroup);
 
-        // 답글 섹션
         if (p.replies) {
             const replySection = createSafeElement("div", "reply-section");
             p.replies.forEach((r, rIdx) => { 
