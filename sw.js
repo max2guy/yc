@@ -1,15 +1,15 @@
 // 파일명: sw.js
-const CACHE_NAME = 'yc-prayer-v1';
+const CACHE_NAME = 'yc-prayer-v2-notification';
 
-// 캐시할 파일 목록 (우리가 가진 파일들)
+// 캐시할 파일 목록
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
     './style.css',
     './script.js',
     './manifest.json',
-    './logo-192.png',
-    './logo-512.png',
+    './icon-192.png',
+    './icon-512.png',
     'https://d3js.org/d3.v7.min.js',
     'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
     'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js',
@@ -49,6 +49,25 @@ self.addEventListener('fetch', (event) => {
                     return caches.match('./index.html');
                 }
             });
+        })
+    );
+});
+
+// ★ [추가] 알림 클릭 시 앱 열기
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close(); // 알림 닫기
+    event.waitUntil(
+        clients.matchAll({ type: 'window' }).then(windowClients => {
+            // 이미 열린 창이 있으면 포커스
+            for (let client of windowClients) {
+                if (client.url === '/' || client.url.includes('index.html')) {
+                    return client.focus();
+                }
+            }
+            // 없으면 새로 열기
+            if (clients.openWindow) {
+                return clients.openWindow('./index.html');
+            }
         })
     );
 });
