@@ -1,5 +1,5 @@
 // ==========================================
-// 연천장로교회 청년부 기도 네트워크 (Final + Profile Upload)
+// 연천장로교회 청년부 기도 네트워크 (Final + Profile + Badge)
 // ==========================================
 
 // 1. 기본 설정 및 서비스 워커
@@ -87,6 +87,19 @@ let dragStartX = 0;
 let dragStartY = 0;
 let isDragAction = false;
 const brightColors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9", "#DCEDC8", "#F0F4C3", "#FFF9C4", "#FFECB3", "#FFE0B2", "#FFCCBC", "#D7CCC8", "#F5F5F5", "#CFD8DC"];
+
+// ==========================================
+// [신규] 앱 아이콘 뱃지 관리 (Badging API)
+// ==========================================
+function setAppBadge(count) {
+    if ('setAppBadge' in navigator) {
+        if (count > 0) {
+            navigator.setAppBadge(count).catch(error => console.log('뱃지 설정 실패:', error));
+        } else {
+            navigator.clearAppBadge().catch(error => console.log('뱃지 제거 실패:', error));
+        }
+    }
+}
 
 // IP 추적 및 강제 퇴장(Kick) 시스템
 async function getMyIp() {
@@ -440,12 +453,15 @@ window.addEventListener("resize", () => { const w = window.innerWidth; const h =
 // UI 핸들러
 let currentMemberData = null;
 function toggleCampPopup() { document.getElementById('camp-popup').classList.toggle('active'); }
+
+// 채팅 팝업 토글 (배지 초기화 로직 포함)
 function toggleChatPopup() { 
     const el = document.getElementById('chat-popup'); 
     el.classList.toggle('active'); 
     if(el.classList.contains('active')) {
         document.getElementById('chat-badge').classList.remove('active');
         unreadChatKeys.clear(); 
+        setAppBadge(0); // 앱 뱃지 초기화
         setTimeout(() => document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight, 100);
     }
 }
@@ -498,7 +514,7 @@ function updateMemberColor(v) { if(currentMemberData) membersRef.child(currentMe
 function deleteMember() { if(currentMemberData && confirm("삭제하시겠습니까?")) { membersRef.child(currentMemberData.firebaseKey).remove(); closePrayerPopup(); }}
 
 // ==========================================
-// [신규] 프로필 편집 기능 (사진 업로드 포함)
+// 프로필 편집 기능 (사진 업로드 포함)
 // ==========================================
 let tempProfileImage = "";
 
@@ -626,7 +642,10 @@ messagesRef.limitToLast(50).on('child_added', snap => {
     if (d.timestamp > loadTime && d.senderId !== mySessionId) {
         unreadChatKeys.add(snap.key);
         const popup = document.getElementById('chat-popup');
-        if (!popup.classList.contains('active')) { document.getElementById('chat-badge').classList.add('active'); }
+        if (!popup.classList.contains('active')) { 
+            document.getElementById('chat-badge').classList.add('active'); 
+            setAppBadge(unreadChatKeys.size); // 앱 아이콘에 숫자 뱃지 설정
+        }
     }
     const isMine = d.senderId === mySessionId;
     const div = document.createElement("div"); div.className = "chat-bubble-wrapper"; div.setAttribute('data-key', snap.key);
