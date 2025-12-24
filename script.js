@@ -1,6 +1,6 @@
 // ==========================================
 // 연천장로교회 청년부 기도 네트워크
-// (기능: UI 최적화 + 스켈레톤 + 푸시알림 + 핀 고정)
+// (기능: UI 최적화 + 스켈레톤 + 푸시알림 + 핀 고정 + 답글 삭제)
 // ==========================================
 
 // 1. 서비스 워커 등록
@@ -102,7 +102,7 @@ const messagesRef = database.ref('messages');
 const messaging = firebase.messaging();
 
 // TODO: Firebase 콘솔 > 프로젝트 설정 > 클라우드 메시징 > 웹 구성 > "키 쌍 생성" 후 아래에 붙여넣기
-const VAPID_KEY = "BPR31FIgOf9laREssQekHeXWL_8QsFg-LxvRmGUjBEBlsuTwTJxW8RN62QfB4Gk0rDaz9jXdByi8P0CuBA7ew0U"; 
+const VAPID_KEY = "여기에_VAPID_키를_붙여넣으세요"; 
 
 async function requestPushPermission() {
     try {
@@ -657,7 +657,7 @@ function saveProfileChanges() {
 function createSafeElement(tag, className, text) { const el = document.createElement(tag); if (className) el.className = className; if (text) el.textContent = text; return el; }
 
 // ==========================================
-// [UI 최적화 핵심] 아이콘 버튼 + 카드 UI + 말풍선 댓글
+// [UI 최적화 핵심] 아이콘 버튼 + 카드 UI + 말풍선 댓글 + 댓글 삭제
 // ==========================================
 function renderPrayers() {
     const list = document.getElementById("prayer-list"); 
@@ -716,13 +716,17 @@ function renderPrayers() {
         div.appendChild(content);
         div.appendChild(actionGroup);
 
-        // (4) 댓글(답글) 영역 - 말풍선 스타일
+        // (4) 댓글(답글) 영역 - 말풍선 + 삭제 버튼
         if (p.replies && p.replies.length > 0) {
             const replySection = createSafeElement("div", "reply-section");
-            p.replies.forEach(r => { 
+            p.replies.forEach((r, rIndex) => { 
                 const rItem = document.createElement("div");
                 rItem.className = "reply-item";
-                rItem.innerHTML = `<span class="reply-icon">↳</span> <span>${r.content}</span>`;
+                rItem.innerHTML = `
+                    <span class="reply-icon">↳</span> 
+                    <span style="flex-grow:1; word-break:break-all;">${r.content}</span>
+                    <button class="reply-delete-btn" onclick="deleteReply(${i}, ${rIndex})">&times;</button>
+                `;
                 replySection.appendChild(rItem); 
             });
             div.appendChild(replySection);
@@ -734,8 +738,6 @@ function renderPrayers() {
 
 function togglePin(index) {
     if (!currentMemberData) return;
-    
-    // 현재 상태 토글
     const currentState = currentMemberData.prayers[index].isPinned || false;
     currentMemberData.prayers[index].isPinned = !currentState;
 
@@ -744,6 +746,20 @@ function togglePin(index) {
     }).then(() => {
         renderPrayers();
     });
+}
+
+// [답글 삭제 함수]
+function deleteReply(prayerIndex, replyIndex) {
+    if(!confirm("이 답글을 삭제하시겠습니까?")) return;
+
+    if (currentMemberData.prayers[prayerIndex].replies) {
+        currentMemberData.prayers[prayerIndex].replies.splice(replyIndex, 1);
+        membersRef.child(currentMemberData.firebaseKey).update({
+            prayers: currentMemberData.prayers
+        }).then(() => {
+            renderPrayers();
+        });
+    }
 }
 
 function deletePrayer(i) { if(confirm("정말 삭제하시겠습니까?")) { currentMemberData.prayers.splice(i, 1); renderPrayers(); const updateData = currentMemberData.prayers.length > 0 ? currentMemberData.prayers : []; membersRef.child(currentMemberData.firebaseKey).update({prayers: updateData}); } }
@@ -764,7 +780,6 @@ messagesRef.limitToLast(50).on('child_added', snap => {
         if (!popup.classList.contains('active')) {
             document.getElementById('chat-badge').classList.add('active'); 
             setAppBadge(unreadChatKeys.size); 
-            // 서비스 워커 알림 요청 (로컬 알림)
             if (document.hidden && Notification.permission === "granted" && 'serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(function(registration) {
                     registration.showNotification("새로운 기도/채팅 메시지", {
