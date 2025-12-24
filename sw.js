@@ -2,7 +2,7 @@
 // 버전: yc-prayer-v17-system-final
 const CACHE_NAME = 'yc-prayer-v17-system-final';
 
-// 캐시할 파일 목록 (모든 필수 리소스 포함)
+// 캐시할 파일 목록 (버전 관리에 포함된 모든 리소스)
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -17,42 +17,46 @@ const ASSETS_TO_CACHE = [
     'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js'
 ];
 
-// 1. 서비스 워커 설치 (리소스 캐싱)
+// 1. 서비스 워커 설치 (새로운 리소스 캐싱)
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[Service Worker] 모든 리소스 캐싱 중...');
+            console.log('[Service Worker] v17 리소스 캐싱 시작');
             return cache.addAll(ASSETS_TO_CACHE);
         })
     );
-    self.skipWaiting(); // 설치 즉시 활성화 유도
+    self.skipWaiting(); // 대기 상태를 건너뛰고 즉시 활성화
 });
 
-// 2. 서비스 워커 활성화 (구버전 캐시 삭제)
+// 2. 서비스 워커 활성화 (이전 버전의 낡은 캐시 삭제)
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keyList) => {
             return Promise.all(keyList.map((key) => {
                 if (key !== CACHE_NAME) {
-                    console.log('[Service Worker] 구버전 캐시 제거:', key);
+                    console.log('[Service Worker] 구버전 캐시 삭제:', key);
                     return caches.delete(key);
                 }
             }));
         })
     );
-    self.clients.claim(); // 제어권 즉시 획득
+    self.clients.claim(); // 즉시 브라우저 제어권 획득
 });
 
-// 3. 네트워크 요청 처리 (캐시 우선 전략)
+// 3. 네트워크 요청 처리 (캐시 우선, 실패 시 네트워크)
 self.addEventListener('fetch', (event) => {
-    // 외부 API 호출(Firebase, 날씨 등)은 캐싱 제외
-    if (event.request.url.includes('google') || event.request.url.includes('api') || event.request.url.includes('firebase')) {
+    // Firebase 통신 및 외부 API(날씨 등)는 캐시하지 않음
+    if (
+        event.request.url.includes('google') || 
+        event.request.url.includes('api') || 
+        event.request.url.includes('firebase')
+    ) {
         return; 
     }
     
     event.respondWith(
         caches.match(event.request).then((response) => {
-            // 캐시에 있으면 반환, 없으면 네트워크에서 가져옴
+            // 캐시에 저장된 파일이 있으면 반환, 없으면 네트워크 요청
             return response || fetch(event.request).catch(() => {
                 // 오프라인 상태에서 페이지 이동 시 index.html 반환
                 if (event.request.mode === 'navigate') {
@@ -63,19 +67,16 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// 4. 푸시 알림 클릭 이벤트 처리
+// 4. 알림 클릭 시 앱으로 이동
 self.addEventListener('notificationclick', (event) => {
-    event.notification.close(); // 알림 닫기
-    
+    event.notification.close();
     event.waitUntil(
         clients.matchAll({ type: 'window' }).then(windowClients => {
-            // 앱이 이미 열려있으면 포커스
             for (let client of windowClients) {
                 if (client.url === '/' || client.url.includes('index.html')) {
                     return client.focus();
                 }
             }
-            // 닫혀있으면 앱 실행
             if (clients.openWindow) {
                 return clients.openWindow('./index.html');
             }
