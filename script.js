@@ -771,22 +771,32 @@ function addReply(i) { const v = prompt("답글:"); if(v) { if(containsBannedWor
 function sendChatMessage() { const t = document.getElementById("chat-msg").value; if(t) { messagesRef.push({name:"익명", text:t, senderId:mySessionId, timestamp: firebase.database.ServerValue.TIMESTAMP}); document.getElementById("chat-msg").value=""; }}
 function deleteChatMessage(k) { if(confirm("관리자 삭제?")) messagesRef.child(k).remove(); }
 
+// ==========================================
+// [수정됨] script.js 하단 채팅 수신 및 알림 로직
+// ==========================================
 messagesRef.limitToLast(50).on('child_added', snap => {
     const d = snap.val();
+    
+    // 메시지가 내가 보낸 게 아니고, 접속 이후에 온 것이라면
     if (d.timestamp > lastChatReadTime && d.senderId !== mySessionId) {
         unreadChatKeys.add(snap.key);
         const popup = document.getElementById('chat-popup');
         
+        // 팝업이 닫혀있을 때만 알림
         if (!popup.classList.contains('active')) {
+            // 1. 내부 빨간 점 배지
             document.getElementById('chat-badge').classList.add('active'); 
+            // 2. 앱 아이콘 숫자 배지
             setAppBadge(unreadChatKeys.size); 
+            
+            // 3. [핵심 수정] 서비스 워커 알림 요청 (고유 태그 사용)
             if (document.hidden && Notification.permission === "granted" && 'serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(function(registration) {
                     registration.showNotification("새로운 기도/채팅 메시지", {
                         body: d.text,
                         icon: 'icon-192.png',
-                        tag: 'prayer-chat',
-                        renotify: true,  // [핵심] 같은 알림이라도 진동/소리를 다시 울리게 함
+                        // [중요] 태그에 메시지 고유 키(snap.key)를 붙여서 매번 다른 알림으로 인식시킴
+                        tag: 'msg-' + snap.key, 
                         vibrate: [200, 100, 200]
                     });
                 });
@@ -840,5 +850,6 @@ function gameLoop(timestamp) {
 }
 resizeWeatherCanvas();
 requestAnimationFrame(gameLoop);
+
 
 
