@@ -53,7 +53,7 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// ★ [추가] 알림 클릭 시 앱 열기
+// ★ [필수] 알림 클릭 시 앱 열기 (이게 없으면 알림 눌러도 반응 없음)
 self.addEventListener('notificationclick', (event) => {
     event.notification.close(); // 알림 닫기
     event.waitUntil(
