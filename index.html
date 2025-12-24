@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>연천장로교회 청년부: 함께 기도해요</title>
+    
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="stylesheet" href="style.css?v=20">
+    
+    <link rel="stylesheet" href="style.css?v=12.0">
     
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -14,9 +16,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
 <body id="body">
+
     <div id="loading">
         <div class="spinner"></div>
-        <div class="loading-text">기도 네트워크 연결 중...</div>
+        <div class="loading-text">기도의 불을 밝히는 중...</div>
     </div>
 
     <button class="camp-btn top-ui-common" onclick="event.stopPropagation(); toggleCampPopup()">⛺ 2026 캠프</button>
@@ -28,28 +31,32 @@
     <canvas id="weather-canvas"></canvas>
     <div id="visualization"></div>
 
-    <div id="lightbox" onclick="closeLightbox()"><img id="lightbox-img" src="" alt=""></div>
-    <div id="update-toast" class="system-toast" onclick="window.location.reload(true)">🔄 새 버전 업데이트</div>
-    <div id="weather-toast" class="system-toast"><span id="weather-text">날씨 로딩 중...</span></div>
+    <div id="lightbox" onclick="closeLightbox()"><img id="lightbox-img" src="" alt="확대"></div>
+    <div id="update-toast" class="system-toast" onclick="location.reload(true)">🔄 업데이트가 있습니다 (터치)</div>
+    <div id="weather-toast" class="system-toast"><span id="weather-text">날씨 불러오는 중...</span></div>
 
     <div id="menu-container">
         <button class="float-btn menu-main-btn" onclick="event.stopPropagation(); toggleFabMenu()">☰</button>
         <button class="float-btn sub-btn settings-btn" onclick="event.stopPropagation(); openSettingsModal()">⚙️</button>
         <button class="float-btn sub-btn add-member-btn" onclick="event.stopPropagation(); addNewMember()">➕</button>
     </div>
-    <button class="chat-btn float-btn" onclick="event.stopPropagation(); toggleChatPopup()">💬<div id="chat-badge" class="chat-badge"></div></button>
+
+    <button class="chat-btn float-btn" onclick="event.stopPropagation(); toggleChatPopup()">
+        💬
+        <div id="chat-badge" class="chat-badge"></div>
+    </button>
     
     <div id="admin-modal" onclick="closeAdminModal(event)">
         <div class="admin-box" onclick="event.stopPropagation()">
-            <h3>관리자 인증</h3>
+            <h3>관리자 모드</h3>
             <input type="password" id="admin-pw" placeholder="비밀번호">
-            <button class="submit-btn" onclick="checkAdmin()">확인</button>
+            <button class="submit-btn" onclick="checkAdmin()">로그인</button>
         </div>
     </div>
     
     <div id="color-modal" onclick="closeColorModal()">
         <div class="color-box" onclick="event.stopPropagation()">
-            <h3>색상 선택</h3>
+            <h3>색상 변경</h3>
             <div class="color-grid" id="color-grid"></div>
             <button class="submit-btn" onclick="closeColorModal()">닫기</button>
         </div>
@@ -57,9 +64,10 @@
 
     <div id="camp-popup" class="popup-overlay" onclick="toggleCampPopup()">
         <div class="popup-content" onclick="event.stopPropagation()">
-            <div class="popup-header"><h2>2026 부흥세대 캠프</h2><button class="close-btn" onclick="toggleCampPopup()">&times;</button></div>
-            <div style="overflow-y:auto; flex:1; padding:10px;">
+            <div class="popup-header"><h2>2026 캠프 안내</h2><button class="close-btn" onclick="toggleCampPopup()">&times;</button></div>
+            <div style="overflow-y:auto; flex:1; padding:15px;">
                 <img src="https://images.weserv.nl/?url=revival.slim153.com/main/data/editor/2512/b301d4d1631a2282d790dfa909122db3_1764730167_2768.jpg" style="width:100%; border-radius:10px; margin-bottom:10px;" onclick="openLightbox(this.src)">
+                <img src="https://images.weserv.nl/?url=revival.slim153.com/main/data/editor/2512/b301d4d1631a2282d790dfa909122db3_1764730167_3925.png" style="width:100%; border-radius:10px;" onclick="openLightbox(this.src)">
             </div>
         </div>
     </div>
@@ -67,8 +75,10 @@
     <div id="chat-popup" class="popup-overlay" onclick="toggleChatPopup()">
         <div class="popup-content" onclick="event.stopPropagation()">
             <div class="popup-header">
-                <h2>소통방</h2>
-                <button id="noti-btn" onclick="toggleNotification()" style="font-size:0.8rem; padding:5px;">🔔 알림 켜기</button>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <h2>소통방</h2>
+                    <button id="noti-btn" onclick="toggleNotification()" style="font-size:0.8rem; padding:4px 8px; border-radius:12px; border:1px solid orange; background:#fff;">🔔 알림 켜기</button>
+                </div>
                 <button class="close-btn" onclick="toggleChatPopup()">&times;</button>
             </div>
             <div id="chat-messages" class="chat-messages"></div>
@@ -82,31 +92,33 @@
     <div id="prayer-popup" class="popup-overlay" onclick="closePrayerPopup()">
         <div class="popup-content" onclick="event.stopPropagation()">
             <div class="popup-header">
-                <div style="display:flex; align-items:center; gap:10px;">
+                <div class="name-container">
                     <h2 id="panel-name">이름</h2>
-                    <button class="edit-name-btn" onclick="editProfile()">편집</button>
+                    <button class="edit-name-btn" onclick="editProfile()">프로필 수정</button>
                     <div id="current-color-display" class="color-trigger-btn" onclick="openColorModal()"></div>
                 </div>
                 <button class="close-btn" onclick="closePrayerPopup()">&times;</button>
             </div>
             <div id="prayer-list"></div>
             <div class="prayer-input-area">
-                <div class="prayer-verse">"두세 사람이 내 이름으로 모인 곳에는 나도 그들 중에 있느니라"</div>
+                <div class="prayer-verse">"두세 사람이 내 이름으로 모인 곳에는<br>나도 그들 중에 있느니라" (마 18:20)</div>
                 <div class="prayer-input-row">
-                    <input type="text" id="new-prayer" placeholder="기도제목 입력...">
+                    <input type="text" id="new-prayer" placeholder="기도제목을 나눠주세요...">
                     <button class="prayer-send-btn" onclick="addPrayer()">🙏</button>
                 </div>
-                <div style="text-align:right;"><button class="delete-member-btn" onclick="deleteMember()">멤버 삭제</button></div>
+                <div style="text-align: right; margin-top:5px;">
+                    <button class="delete-member-btn" onclick="deleteMember()">멤버 삭제</button>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="profile-edit-modal" class="popup-overlay" onclick="closeProfileEditModal()">
-        <div class="popup-content" style="height:auto; padding:20px;" onclick="event.stopPropagation()">
-            <h3>프로필 편집</h3>
+        <div class="popup-content" style="height: auto; padding: 25px;" onclick="event.stopPropagation()">
+            <h3>프로필 설정</h3>
             <div class="profile-upload-container">
                 <img id="edit-profile-preview" src="" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #ddd;">
-                <input type="file" id="profile-file-input" accept="image/*" onchange="handleProfileFileSelect(event)" style="margin-top:10px;">
+                <input type="file" id="profile-file-input" accept="image/*" style="margin-top:10px;" onchange="handleProfileFileSelect(event)">
             </div>
             <input type="text" id="edit-profile-name" class="profile-name-input" placeholder="이름" style="width:100%; padding:10px; margin-top:10px;">
             <div style="display:flex; gap:10px; margin-top:20px;">
@@ -117,17 +129,17 @@
     </div>
 
     <div id="settings-modal" class="popup-overlay" onclick="closeSettingsModal()">
-        <div class="popup-content" style="height:auto; padding:20px;" onclick="event.stopPropagation()">
+        <div class="popup-content" style="height: auto; padding: 20px;" onclick="event.stopPropagation()">
             <div class="popup-header"><h2>설정</h2><button class="close-btn" onclick="closeSettingsModal()">&times;</button></div>
             <div class="settings-list">
-                <div class="settings-item"><span>🔔 알림</span><input type="checkbox" id="setting-noti-toggle" onchange="handleNotiToggle(this)"></div>
-                <div class="settings-item"><span>🔄 초기화</span><button class="setting-action-btn" onclick="forceRefresh()">새로고침</button></div>
-                <div class="settings-item"><span>🔒 관리자</span><input type="checkbox" id="setting-admin-toggle" onchange="handleAdminToggle(this)"></div>
+                <div class="settings-item"><span>🔔 알림 받기</span><input type="checkbox" id="setting-noti-toggle" onchange="handleNotiToggle(this)"></div>
+                <div class="settings-item"><span>🔄 데이터 초기화</span><button class="setting-action-btn" onclick="forceRefresh()">실행</button></div>
+                <div class="settings-item"><span>🔒 관리자 모드</span><input type="checkbox" id="setting-admin-toggle" onchange="handleAdminToggle(this)"></div>
             </div>
-            <div style="text-align:center; margin-top:20px; color:#aaa;">v20 Integrated</div>
+            <div style="text-align:center; margin-top:20px; color:#aaa;">v12.0 Classic</div>
         </div>
     </div>
 
-    <script src="script.js?v=20"></script>
+    <script src="script.js?v=12.0"></script>
 </body>
 </html>
