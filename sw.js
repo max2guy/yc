@@ -1,5 +1,6 @@
 // 파일명: sw.js
-const CACHE_NAME = 'yc-prayer-v2-notification';
+// 버전: v3-final-fix (이 버전을 바꿔야 폰에서 새 파일로 인식합니다)
+const CACHE_NAME = 'yc-prayer-v3-final-fix';
 
 // 캐시할 파일 목록
 const ASSETS_TO_CACHE = [
@@ -16,6 +17,7 @@ const ASSETS_TO_CACHE = [
     'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js'
 ];
 
+// 1. 설치 (캐시 저장)
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
@@ -25,6 +27,7 @@ self.addEventListener('install', (event) => {
     self.skipWaiting();
 });
 
+// 2. 활성화 (구버전 삭제)
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keyList) => {
@@ -38,6 +41,7 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
+// 3. 요청 처리
 self.addEventListener('fetch', (event) => {
     if (event.request.url.includes('google') || event.request.url.includes('api')) {
         return; 
@@ -53,18 +57,16 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// ★ [필수] 알림 클릭 시 앱 열기 (이게 없으면 알림 눌러도 반응 없음)
+// 4. 알림 클릭 시 앱 열기 (필수)
 self.addEventListener('notificationclick', (event) => {
-    event.notification.close(); // 알림 닫기
+    event.notification.close();
     event.waitUntil(
         clients.matchAll({ type: 'window' }).then(windowClients => {
-            // 이미 열린 창이 있으면 포커스
             for (let client of windowClients) {
                 if (client.url === '/' || client.url.includes('index.html')) {
                     return client.focus();
                 }
             }
-            // 없으면 새로 열기
             if (clients.openWindow) {
                 return clients.openWindow('./index.html');
             }
