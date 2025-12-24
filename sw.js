@@ -1,8 +1,7 @@
 // 파일명: sw.js
-// 버전: v5-real-final (버전을 바꿔야 폰에서 새 파일로 인식합니다)
-const CACHE_NAME = 'yc-prayer-v5-real-final';
+// 버전: yc-prayer-v12-reset (버전을 올려서 강제 갱신 유도)
+const CACHE_NAME = 'yc-prayer-v12-reset';
 
-// 캐시할 파일 목록
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -17,7 +16,6 @@ const ASSETS_TO_CACHE = [
     'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js'
 ];
 
-// 1. 설치 (캐시 저장)
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
@@ -27,7 +25,6 @@ self.addEventListener('install', (event) => {
     self.skipWaiting();
 });
 
-// 2. 활성화 (구버전 삭제)
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keyList) => {
@@ -41,7 +38,6 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// 3. 요청 처리
 self.addEventListener('fetch', (event) => {
     if (event.request.url.includes('google') || event.request.url.includes('api')) {
         return; 
@@ -57,7 +53,6 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// 4. 알림 클릭 시 앱 열기 (필수)
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     event.waitUntil(
