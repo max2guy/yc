@@ -10,7 +10,10 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=8">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     
     <script src="https://d3js.org/d3.v7.min.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" defer></script>
@@ -18,7 +21,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js" defer></script>
     
-    <script src="script.js?v=7" defer></script>
+    <script src="script.js?v=8" defer></script>
 </head>
 <body id="body">
 
@@ -50,11 +53,7 @@
 
     <div id="menu-container">
         <button class="float-btn menu-main-btn" onclick="event.stopPropagation(); toggleFabMenu()">☰</button>
-        
-        <button class="float-btn sub-btn settings-btn" onclick="event.stopPropagation(); openSettingsModal()" title="설정">
-            ⚙️
-        </button>
-        
+        <button class="float-btn sub-btn settings-btn" onclick="event.stopPropagation(); openSettingsModal()" title="설정">⚙️</button>
         <button class="float-btn sub-btn add-member-btn" onclick="event.stopPropagation(); addNewMember()" title="사람 추가">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </button>
@@ -146,15 +145,18 @@
 
     <div id="profile-edit-modal" class="popup-overlay" onclick="closeProfileEditModal()">
         <div class="popup-content" style="height: auto; max-width: 320px; padding: 25px; text-align: center;" onclick="event.stopPropagation()">
-            <h3 style="margin-top:0; color:#5D4037;">프로필 편집</h3>
+            <h3 style="margin-top:0; color:#5D4037;">프로필 사진 변경</h3>
             
             <div class="profile-upload-container">
                 <div class="profile-wrapper">
-                    <img id="edit-profile-preview" src="" alt="프로필 미리보기">
-                    <label for="profile-file-input" class="upload-btn">📷</label>
+                    <img id="edit-profile-preview" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="프로필">
+                </div>
+                
+                <div style="margin-top: 15px; display:flex; justify-content:center; gap:10px;">
+                    <label for="profile-file-input" class="action-btn-gray">📂 사진 선택</label>
                     <input type="file" id="profile-file-input" accept="image/*" style="display: none;" onchange="handleProfileFileSelect(event)">
                 </div>
-                <p class="upload-guide">터치하여 사진 변경</p>
+                <p class="upload-guide">사진을 선택하면 크기를 조절할 수 있습니다.</p>
             </div>
 
             <div style="margin-top: 20px; text-align: left;">
@@ -186,20 +188,17 @@
                 <h2>⚙️ 설정</h2>
                 <button class="close-btn" onclick="closeSettingsModal()">&times;</button>
             </div>
-            
             <div class="settings-list">
                 <button class="setting-item" onclick="toggleAdminMode(); closeSettingsModal();">
                     <span class="setting-icon">🔒</span>
                     <span class="setting-text">관리자 모드 (로그인)</span>
                 </button>
-                
                 <button class="setting-item" onclick="forceRefresh()">
                     <span class="setting-icon">🔄</span>
                     <span class="setting-text">앱 새로고침 (오류 해결)</span>
                 </button>
-
                 <div style="margin-top: 20px; font-size: 0.8rem; color: #aaa; text-align: center;">
-                    버전 1.2.0 | 연천장로교회 청년부
+                    버전 1.3.0 | 연천장로교회 청년부
                 </div>
             </div>
         </div>
