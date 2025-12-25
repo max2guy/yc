@@ -10,16 +10,15 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
     
     <script src="https://d3js.org/d3.v7.min.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js" defer></script>
-    
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js" defer></script>
     
-    <script src="script.js?v=5" defer></script>
+    <script src="script.js?v=6" defer></script>
 </head>
 <body id="body">
 
@@ -51,11 +50,14 @@
 
     <div id="menu-container">
         <button class="float-btn menu-main-btn" onclick="event.stopPropagation(); toggleFabMenu()">☰</button>
-        <button class="float-btn sub-btn admin-btn" id="admin-trigger" onclick="event.stopPropagation(); toggleAdminMode()" title="관리자 모드">🔒</button>
+        
         <button class="float-btn sub-btn add-member-btn" onclick="event.stopPropagation(); addNewMember()" title="사람 추가">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </button>
-        <button class="float-btn sub-btn refresh-btn" onclick="event.stopPropagation(); forceRefresh()" title="새로고침">🔄</button>
+        
+        <button class="float-btn sub-btn settings-btn" onclick="event.stopPropagation(); openSettingsModal()" title="설정">
+            ⚙️
+        </button>
     </div>
 
     <button class="chat-btn float-btn" onclick="event.stopPropagation(); toggleChatPopup()">
@@ -175,6 +177,31 @@
         <div class="install-actions">
             <button id="btn-install-app" class="install-confirm">설치</button>
             <button id="btn-close-install" class="install-dismiss">&times;</button>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="popup-overlay" onclick="closeSettingsModal()">
+        <div class="popup-content settings-box" onclick="event.stopPropagation()">
+            <div class="popup-header">
+                <h2>⚙️ 설정</h2>
+                <button class="close-btn" onclick="closeSettingsModal()">&times;</button>
+            </div>
+            
+            <div class="settings-list">
+                <button class="setting-item" onclick="toggleAdminMode(); closeSettingsModal();">
+                    <span class="setting-icon">🔒</span>
+                    <span class="setting-text">관리자 모드 (로그인)</span>
+                </button>
+                
+                <button class="setting-item" onclick="forceRefresh()">
+                    <span class="setting-icon">🔄</span>
+                    <span class="setting-text">앱 새로고침 (오류 해결)</span>
+                </button>
+
+                <div style="margin-top: 20px; font-size: 0.8rem; color: #aaa; text-align: center;">
+                    버전 1.1.0 | 연천장로교회 청년부
+                </div>
+            </div>
         </div>
     </div>
 
