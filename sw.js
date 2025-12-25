@@ -1,61 +1,56 @@
-// 파일명: sw.js
-// 버전: v5-network-first (버전을 변경하여 새 로직이 적용되게 함)
-const CACHE_NAME = 'yc-prayer-v5-network-first';
+// ==========================================
+// [sw.js] PWA 캐싱 + 알림 클릭 처리 (최종본)
+// ==========================================
 
-// HTML(페이지)을 제외한 정적 자산만 미리 캐싱
+const CACHE_NAME = "yc-prayer-v1";
 const ASSETS_TO_CACHE = [
-    './style.css',
-    './script.js', // script.js는 버전 쿼리(?v=4)로 관리되므로 캐싱해도 됨
-    './manifest.json',
-    './icon-192.png',
-    './icon-512.png'
-    // 외부 CDN(Firebase, D3)은 브라우저 캐시에 맡기거나 런타임 캐싱을 하는 것이 안전하여 제외함
+    "./",
+    "./index.html",
+    "./style.css",
+    "./script.js",
+    "./manifest.json",
+    "./icon-192.png",
+    "https://d3js.org/d3.v7.min.js",
+    "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js",
+    "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js",
+    "https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js",
+    "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"
 ];
 
-// 1. 설치
-self.addEventListener('install', (event) => {
+// 1. 설치 (캐싱)
+self.addEventListener("install", (event) => {
+    self.skipWaiting(); // 대기 없이 바로 새 버전 적용
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
+            console.log("[Service Worker] 파일 캐싱 중...");
             return cache.addAll(ASSETS_TO_CACHE);
         })
     );
-    self.skipWaiting(); // 대기 없이 즉시 새 서비스 워커 활성화
 });
 
 // 2. 활성화 (구버전 캐시 정리)
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
     event.waitUntil(
         caches.keys().then((keyList) => {
-            return Promise.all(keyList.map((key) => {
-                if (key !== CACHE_NAME) {
-                    return caches.delete(key);
-                }
-            }));
+            return Promise.all(
+                keyList.map((key) => {
+                    if (key !== CACHE_NAME) {
+                        return caches.delete(key);
+                    }
+                })
+            );
         })
     );
-    self.clients.claim(); // 즉시 모든 클라이언트 제어
+    return self.clients.claim(); // 즉시 제어권 가져오기
 });
 
-// 3. 요청 처리 (핵심 변경 사항)
-self.addEventListener('fetch', (event) => {
-    // API나 구글 관련 요청은 건너뜀
-    if (event.request.url.includes('google') || event.request.url.includes('api')) {
-        return;
+// 3. 네트워크 요청 가로채기 (오프라인 지원)
+self.addEventListener("fetch", (event) => {
+    // Firebase 요청은 캐싱하지 않고 네트워크로 보냄 (실시간성 중요)
+    if (event.request.url.includes("firebase") || event.request.url.includes("googleapis")) {
+        return; 
     }
-
-    // 전략 1: HTML 문서(페이지 이동)는 'Network First' (항상 최신 버전 확인)
-    if (event.request.mode === 'navigate') {
-        event.respondWith(
-            fetch(event.request)
-                .catch(() => {
-                    // 네트워크 실패(오프라인) 시에만 캐시된 index.html 사용
-                    return caches.match('./index.html');
-                })
-        );
-        return;
-    }
-
-    // 전략 2: 이미지, CSS, JS 등은 'Cache First' (속도 우선)
+    
     event.respondWith(
         caches.match(event.request).then((response) => {
             return response || fetch(event.request);
@@ -63,19 +58,44 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// 4. 알림 클릭 처리 (기존 유지)
-self.addEventListener('notificationclick', (event) => {
-    event.notification.close();
+// 4. [중요] 알림 클릭 시 앱 열기 (꼼수 핵심)
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close(); // 알림창 닫기
+    
     event.waitUntil(
-        clients.matchAll({ type: 'window' }).then(windowClients => {
-            for (let client of windowClients) {
-                if (client.url === '/' || client.url.includes('index.html')) {
+        clients.matchAll({ type: 'window' }).then(function(clientList) {
+            // 이미 열린 앱이 있으면 그 창을 맨 앞으로
+            for (var i = 0; i < clientList.length; i++) {
+                var client = clientList[i];
+                if (client.url.includes('index.html') && 'focus' in client) {
                     return client.focus();
                 }
             }
+            // 없으면 새로 열기
             if (clients.openWindow) {
                 return clients.openWindow('./index.html');
             }
         })
     );
+});
+
+// 5. (혹시 모를) 푸시 수신 리스너
+self.addEventListener('push', function(event) {
+    // 데이터가 있으면 띄워줌
+    if (event.data) {
+        try {
+            const payload = event.data.json();
+            const options = {
+                body: payload.notification.body,
+                icon: 'icon-192.png',
+                vibrate: [200, 100, 200],
+                data: { url: './index.html' },
+                tag: 'push-' + Date.now(), // 태그를 매번 다르게 해서 씹힘 방지
+                renotify: true
+            };
+            event.waitUntil(self.registration.showNotification(payload.notification.title, options));
+        } catch (e) {
+            console.log('푸시 처리 중 오류 (무시 가능)', e);
+        }
+    }
 });
