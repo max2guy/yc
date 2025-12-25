@@ -1,4 +1,4 @@
-/* style.css - Visual Balanced & Admin Indicator */
+/* style.css - Image Cropper Added */
 
 /* [기본 설정] 터치 최적화 & 하이라이트 제거 */
 * {
@@ -27,7 +27,7 @@ body {
 }
 
 /* 버튼 터치 반응성 개선 */
-button, .float-btn, .icon-btn, .amen-btn, .setting-item {
+button, .float-btn, .icon-btn, .amen-btn, .setting-item, .action-btn-gray {
     touch-action: manipulation;
     user-select: none;
     -webkit-user-select: none;
@@ -85,10 +85,7 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
     transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); 
     box-shadow: 0 4px 10px rgba(141, 110, 99, 0.2); 
     border: none;
-    
-    /* [수정] 크기 통일의 핵심 (테두리 포함 50px) */
     box-sizing: border-box; 
-    
     width: 50px !important; height: 50px !important; 
     border-radius: 50% !important; padding: 0 !important; margin: 0 !important;
     display: flex !important; align-items: center !important; justify-content: center !important;
@@ -103,10 +100,9 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
     align-items: center;
 }
 
-/* [수정] 메인 메뉴 버튼 (아이콘 줄여서 시각적 균형 맞춤) */
 .menu-main-btn {
     background: #3E2723; color: white; 
-    font-size: 1.2rem; /* 1.5 -> 1.2 */
+    font-size: 1.2rem; 
     z-index: 101;
     box-shadow: 0 3px 8px rgba(62, 39, 35, 0.3);
 }
@@ -126,13 +122,12 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
 .add-member-btn { background: white; color: var(--theme-orange); border: 2px solid var(--theme-orange); }
 .add-member-btn svg { fill: var(--theme-orange); width: 24px; height: 24px; }
 
-/* [수정] 채팅 버튼 (아이콘 키우고 테두리 두껍게) */
 .chat-btn { 
     position: fixed; bottom: 30px; right: 30px; 
     background: #FFECB3; 
     color: #5D4037; 
-    font-size: 1.5rem; /* 1.4 -> 1.5 */
-    border: 3px solid #FFCA28; /* 2 -> 3px */
+    font-size: 1.5rem; 
+    border: 3px solid #FFCA28; 
     z-index: 100;
 }
 .chat-badge { position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; background: #FF5252; border-radius: 50%; border: 2px solid white; display: none; animation: pulse-red 1.5s infinite; z-index: 101; }
@@ -211,98 +206,30 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
 @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 .prayer-card:active { transform: scale(0.98); }
-
-.prayer-card.pinned {
-    background-color: #FFFDE7;
-    border-color: #FFD54F;
-    border-left-color: #FFC107;
-    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.15);
-}
-
-.prayer-header {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    margin-bottom: 12px;
-}
-.prayer-date {
-    font-size: 0.75rem; color: #aaa; font-weight: 500;
-    display: flex; align-items: center; gap: 4px;
-}
+.prayer-card.pinned { background-color: #FFFDE7; border-color: #FFD54F; border-left-color: #FFC107; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.15); }
+.prayer-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.prayer-date { font-size: 0.75rem; color: #aaa; font-weight: 500; display: flex; align-items: center; gap: 4px; }
 .pinned-mark { color: #FF8F00; font-size: 0.9rem; }
+.prayer-content { font-size: 1rem; line-height: 1.6; color: #3E2723; word-wrap: break-word; white-space: pre-wrap; margin-bottom: 15px; font-weight: 500; }
+.action-group { display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px dashed #eee; }
 
-.prayer-content {
-    font-size: 1rem; line-height: 1.6; color: #3E2723;
-    word-wrap: break-word; white-space: pre-wrap; 
-    margin-bottom: 15px; font-weight: 500;
-}
-
-/* 액션 바 */
-.action-group {
-    display: flex; justify-content: flex-end; align-items: center; gap: 8px;
-    padding-top: 12px;
-    border-top: 1px dashed #eee;
-}
-
-.icon-btn {
-    background: #F5F5F5; border: none; border-radius: 8px;
-    width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.2s;
-    color: #8D6E63;
-}
+.icon-btn { background: #F5F5F5; border: none; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: #8D6E63; }
 .icon-btn:hover { background: #EFEBE9; color: #5D4037; }
 .icon-btn:active { transform: scale(0.9); }
 .icon-btn svg { width: 16px; height: 16px; fill: currentColor; }
 .icon-btn.active { background: #FFF3E0; color: #FF9800; }
 
-/* 아멘 버튼 */
-.amen-btn {
-    display: flex; align-items: center; gap: 6px;
-    background: white; 
-    border: 1px solid #FFCC80;
-    color: #FF9800; 
-    border-radius: 20px;
-    padding: 6px 14px; 
-    font-size: 0.9rem; 
-    font-weight: bold;
-    cursor: pointer; 
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    margin-right: auto;
-    box-shadow: 0 2px 5px rgba(255, 152, 0, 0.1);
-}
+.amen-btn { display: flex; align-items: center; gap: 6px; background: white; border: 1px solid #FFCC80; color: #FF9800; border-radius: 20px; padding: 6px 14px; font-size: 0.9rem; font-weight: bold; cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); margin-right: auto; box-shadow: 0 2px 5px rgba(255, 152, 0, 0.1); }
 .amen-btn:hover { background: #FFF3E0; transform: scale(1.05); }
 .amen-btn:active { transform: scale(0.95); }
 .amen-btn.active { background: #FF9800; color: white; border-color: #F57C00; box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3); }
 
-/* 답글 섹션 */
-.reply-section {
-    margin-top: 15px;
-    background: #FAFAFA;
-    border-radius: 12px;
-    padding: 10px;
-}
-.reply-item {
-    font-size: 0.85rem; color: #5D4037;
-    padding: 8px 10px;
-    background: white;
-    border-radius: 8px;
-    margin-bottom: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    display: flex; gap: 6px; align-items: flex-start;
-}
+.reply-section { margin-top: 15px; background: #FAFAFA; border-radius: 12px; padding: 10px; }
+.reply-item { font-size: 0.85rem; color: #5D4037; padding: 8px 10px; background: white; border-radius: 8px; margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; gap: 6px; align-items: flex-start; }
 .reply-item:last-child { margin-bottom: 0; }
 .reply-icon { color: #FFCC80; font-size: 0.8rem; margin-top: 2px; }
-
-/* 답글 삭제 버튼 */
-.reply-delete-btn {
-    margin-left: auto;
-    background: none; border: none;
-    color: #ccc; font-size: 1.2rem; line-height: 1;
-    cursor: pointer; padding: 0 4px;
-    display: flex; align-items: center; transition: color 0.2s;
-}
+.reply-delete-btn { margin-left: auto; background: none; border: none; color: #ccc; font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 0 4px; display: flex; align-items: center; transition: color 0.2s; }
 .reply-delete-btn:hover { color: #ef5350; }
-
-/* ------------------------------------- */
 
 .prayer-input-area { padding: 12px; background: #fff; border-top: 2px solid #FFE0B2; flex-shrink: 0; }
 .prayer-verse { background: #FFF8E1; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #5D4037; text-align: center; line-height: 1.4; }
@@ -310,13 +237,7 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
 #new-prayer { flex: 1; padding: 10px 15px; border: 2px solid #FFE0B2; border-radius: 20px; font-size: 0.9rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
 #new-prayer:focus { border-color: #8D6E63; }
 
-.prayer-send-btn { 
-    width: 44px; height: 44px; border-radius: 50%; border: none; 
-    background: linear-gradient(135deg, #8D6E63, #6D4C41); color: white; 
-    cursor: pointer; display: flex; align-items: center; justify-content: center; 
-    box-shadow: 0 2px 8px rgba(141, 110, 99, 0.3); 
-    transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+.prayer-send-btn { width: 44px; height: 44px; border-radius: 50%; border: none; background: linear-gradient(135deg, #8D6E63, #6D4C41); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(141, 110, 99, 0.3); transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .prayer-send-btn:hover { transform: scale(1.05); }
 
 .delete-member-btn { margin-top: 8px; background: transparent; color: #ef5350; border: 1px solid #ef5350; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; float: right;}
@@ -344,18 +265,11 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
 .chat-sender { font-size: 0.75rem; color: #8D6E63; margin-bottom: 2px; margin-left: 5px; }
 .chat-input-area { padding: 10px; border-top: 2px solid #FFE0B2; display: flex; gap: 8px; background: #fff; align-items: center; }
 #chat-msg { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; font-size: 1rem; }
-.chat-send-btn { 
-    background: var(--main-node-color); color: white; border: none; 
-    border-radius: 20px; padding: 0 20px; font-weight: bold; cursor: pointer; 
-    height: 40px; white-space: nowrap; min-width: 60px; 
-    display: flex; align-items: center; justify-content: center;
-    transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+.chat-send-btn { background: var(--main-node-color); color: white; border: none; border-radius: 20px; padding: 0 20px; font-weight: bold; cursor: pointer; height: 40px; white-space: nowrap; min-width: 60px; display: flex; align-items: center; justify-content: center; transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
 .admin-delete-chat { font-size: 0.7rem; color: red; cursor: pointer; margin-left: 5px; font-weight: bold; display: none; }
 .admin-mode .admin-delete-chat { display: inline-block; }
 
-/* Lightbox & Modal */
 #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 3000; justify-content: center; align-items: center; }
 #lightbox.active { display: flex; }
 #lightbox img { max-width: 95%; max-height: 90%; border-radius: 8px; animation: popIn 0.3s forwards; }
@@ -366,7 +280,6 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
 #admin-pw { width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; text-align: center; font-size: 1rem; box-sizing: border-box; }
 .submit-btn { width: 100%; padding: 10px; background: linear-gradient(to right, #8D6E63, #6D4C41); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; }
 
-/* Color Picker */
 #color-modal { display: none; position: fixed; z-index: 3000; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
 #color-modal.active { display: flex; animation: fadeIn 0.2s; }
 .color-box { background:white; width: 320px; border-radius: 20px; padding: 20px; text-align:center; }
@@ -375,196 +288,84 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
 .color-swatch:hover { transform: scale(1.1); }
 .color-swatch.selected { border-color: #333; transform: scale(1.1); }
 
-/* --- Animations --- */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes popIn { to { transform: scale(1); } }
 @keyframes pulse-red { 0% { transform: scale(0.9); } 50% { transform: scale(1.2); } 100% { transform: scale(0.9); } }
 @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
 
-/* --- D3 Link & Node Styles --- */
-.links line {
-    stroke: #FFFFFF !important;       
-    stroke-width: 3px !important;     
-    stroke-opacity: 1 !important;     
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); 
-    pointer-events: none;
-}
-
+.links line { stroke: #FFFFFF !important; stroke-width: 3px !important; stroke-opacity: 1 !important; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); pointer-events: none; }
 .nodes g { cursor: pointer; transition: opacity 0.3s; }
 .nodes g:hover { opacity: 0.9; }
 
-/* Profile Upload Styles */
-.profile-upload-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 10px 0;
-}
+/* [수정] 프로필 이미지 자르기 관련 스타일 */
+.profile-upload-container { display: flex; flex-direction: column; align-items: center; margin: 10px 0; }
 
 .profile-wrapper {
     position: relative;
-    width: 120px;
-    height: 120px;
+    width: 250px; /* 자르기 화면에서는 조금 더 크게 */
+    height: 250px;
+    background: #eee;
+    border-radius: 12px;
+    overflow: hidden; /* 이미지가 튀어나오지 않게 */
+    margin-bottom: 15px;
+    border: 2px dashed #ccc;
 }
 
 #edit-profile-preview {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #FFE0B2;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    background-color: #fff;
+    display: block;
+    max-width: 100%; /* 부모에 맞춤 */
 }
 
-.upload-btn {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    background-color: #8D6E63;
-    color: white;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: 2px solid white;
-    font-size: 1.1rem;
-    transition: transform 0.2s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+/* 회색 액션 버튼 */
+.action-btn-gray {
+    background: #E0E0E0; 
+    color: #555; 
+    padding: 8px 16px; 
+    border-radius: 20px; 
+    font-size: 0.85rem; 
+    font-weight: bold; 
+    cursor: pointer; 
+    border: 1px solid #ccc;
 }
-.upload-btn:active { transform: scale(0.9); }
 
 .upload-guide { margin-top: 8px; color: #aaa; font-size: 0.8rem; }
-
-.profile-name-input {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    text-align: center;
-    box-sizing: border-box;
-}
-
+.profile-name-input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; text-align: center; box-sizing: border-box; }
 .btn-save { background: linear-gradient(to right, #8D6E63, #6D4C41); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 .btn-reset { background: #EFEBE9; color: #5D4037; border: 1px solid #D7CCC8; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-/* [Install Banner] */
-.install-banner {
-    position: fixed; bottom: -120px; left: 20px; right: 20px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-    display: flex; justify-content: space-between; align-items: center;
-    transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 9999;
+/* [설정 메뉴 스타일] */
+.settings-btn { 
+    background: white; 
+    color: #5D4037; 
+    font-size: 1.4rem; 
+    border: 2px solid #5D4037; 
 }
+.settings-box { max-width: 300px; height: auto; max-height: 50vh; background: #fff; padding: 0; }
+.settings-list { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+.setting-item { display: flex; align-items: center; gap: 15px; background: #f5f5f5; border: none; padding: 15px; border-radius: 12px; font-size: 1rem; color: #333; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.setting-item:hover { background: #eee; transform: translateY(-2px); }
+.setting-item:active { transform: scale(0.98); }
+.setting-icon { font-size: 1.2rem; }
+.setting-text { font-weight: bold; }
+
+/* [관리자 모드 표시기] */
+.admin-indicator {
+    position: fixed;
+    bottom: 35px; left: 50%; transform: translateX(-50%);
+    background: #D32F2F; color: white;
+    padding: 8px 18px; border-radius: 30px;
+    font-size: 0.9rem; font-weight: bold;
+    box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
+    z-index: 90; display: none; pointer-events: none;
+}
+body.admin-mode .admin-indicator { display: block; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+/* [Install Banner] */
+.install-banner { position: fixed; bottom: -120px; left: 20px; right: 20px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 16px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.25); display: flex; justify-content: space-between; align-items: center; transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 9999; }
 .install-banner.show { bottom: 30px; }
 .install-text { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; color: #5D4037; line-height: 1.4; }
 .app-icon-small { font-size: 1.8rem; background: #FFF3E0; padding: 6px; border-radius: 12px; }
 .install-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
 .install-confirm { background: #8D6E63; color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(141, 110, 99, 0.3); }
 .install-dismiss { background: transparent; border: none; font-size: 1.8rem; color: #bbb; cursor: pointer; padding: 0 5px; line-height: 1; }
-
-@media (max-width: 768px) {
-    .install-banner.show { bottom: calc(20px + env(safe-area-inset-bottom)); }
-}
-
-/* [Skeleton UI] */
-@keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-}
-.skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: 6px;
-    margin-bottom: 8px;
-}
-.skeleton-card {
-    background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    border-left: 4px solid #eee;
-}
-.sk-text { height: 14px; width: 80%; }
-.sk-text-sm { height: 10px; width: 40%; margin-bottom: 12px; }
-.sk-block { height: 60px; width: 100%; margin-top:10px; }
-
-/* [설정 메뉴 스타일] */
-.settings-btn { 
-    background: white;         /* [수정] 배경 흰색 */
-    color: #5D4037;            /* [수정] 글자 갈색 */
-    font-size: 1.4rem; 
-    border: 2px solid #5D4037; /* [수정] 테두리 갈색 */
-}
-
-.settings-box {
-    max-width: 300px;
-    height: auto;
-    max-height: 50vh;
-    background: #fff;
-    padding: 0;
-}
-
-.settings-list {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.setting-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: #f5f5f5;
-    border: none;
-    padding: 15px;
-    border-radius: 12px;
-    font-size: 1rem;
-    color: #333;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-.setting-item:hover {
-    background: #eee;
-    transform: translateY(-2px);
-}
-.setting-item:active {
-    transform: scale(0.98);
-}
-.setting-icon { font-size: 1.2rem; }
-.setting-text { font-weight: bold; }
-
-/* [신규] 관리자 모드 표시기 (하단 중앙) */
-.admin-indicator {
-    position: fixed;
-    bottom: 35px; /* 메뉴 버튼들과 같은 높이 */
-    left: 50%;
-    transform: translateX(-50%); /* 중앙 정렬 */
-    
-    background: #D32F2F; /* 빨간색 */
-    color: white;
-    padding: 8px 18px;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    font-weight: bold;
-    box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
-    
-    z-index: 90;    /* 팝업보단 아래, 노드보단 위 */
-    display: none;  /* 기본 숨김 */
-    pointer-events: none; /* 클릭 통과 */
-}
-
-body.admin-mode .admin-indicator {
-    display: block; /* 관리자 모드 시 등장 */
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+@media (max-width: 768px) { .install-banner.show { bottom: calc(20px + env(safe-area-inset-bottom)); } }
