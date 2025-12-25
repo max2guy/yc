@@ -1,4 +1,4 @@
-/* style.css - Restore Beautiful UI + Cropper */
+/* style.css - Layout Fixes (Camp & Chat restored) */
 
 /* [기본 설정] 터치 최적화 & 하이라이트 제거 */
 * {
@@ -27,7 +27,7 @@ body {
 }
 
 /* 버튼 터치 반응성 개선 */
-button, .float-btn, .icon-btn, .amen-btn, .setting-item, .camera-btn {
+button, .float-btn, .icon-btn, .amen-btn, .setting-item, .camera-btn, .action-btn-gray {
     touch-action: manipulation;
     user-select: none;
     -webkit-user-select: none;
@@ -245,6 +245,33 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item, .camera-btn {
 
 .admin-delete-btn { display: none !important; color: red !important; }
 .admin-mode .admin-delete-btn { display: inline-block !important; }
+
+@media (max-width: 768px) {
+    .popup-content { width: 95%; height: 90vh; border-radius: 20px; }
+    #prayer-list { padding: 10px; }
+    .prayer-input-area { padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+}
+
+/* --- [수정] 캠프 이미지 & 채팅 스타일 복구 --- */
+.camp-img-container { margin-bottom: 20px; padding: 0 15px; }
+.camp-img-title { font-size: 1rem; font-weight: bold; color: #5D4037; margin-bottom: 10px; display: block; border-left: 5px solid #FF7043; padding-left: 10px; }
+
+/* [중요] height: auto로 비율 깨짐 방지 */
+.camp-image { width: 100%; height: auto; display: block; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; }
+
+/* [중요] 채팅방 레이아웃 복구 */
+.chat-messages { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; background: #fff; }
+.chat-bubble-wrapper { display: flex; flex-direction: column; }
+.chat-bubble { max-width: 75%; padding: 8px 12px; border-radius: 12px; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
+.chat-bubble.mine { align-self: flex-end; background: #FFCC80; color: #3E2723; border-top-right-radius: 2px; }
+.chat-bubble.others { align-self: flex-start; background: #f1f1f1; color: #333; border-top-left-radius: 2px; }
+.chat-sender { font-size: 0.75rem; color: #8D6E63; margin-bottom: 2px; margin-left: 5px; }
+.chat-input-area { padding: 10px; border-top: 2px solid #FFE0B2; display: flex; gap: 8px; background: #fff; align-items: center; flex-shrink: 0; }
+#chat-msg { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; font-size: 1rem; }
+.chat-send-btn { background: var(--main-node-color); color: white; border: none; border-radius: 20px; padding: 0 20px; font-weight: bold; cursor: pointer; height: 40px; white-space: nowrap; min-width: 60px; display: flex; align-items: center; justify-content: center; transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.admin-delete-chat { font-size: 0.7rem; color: red; cursor: pointer; margin-left: 5px; font-weight: bold; display: none; }
+.admin-mode .admin-delete-chat { display: inline-block; }
 
 #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 3000; justify-content: center; align-items: center; }
 #lightbox.active { display: flex; }
