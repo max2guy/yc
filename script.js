@@ -1,6 +1,6 @@
 // ==========================================
 // 연천장로교회 청년부 기도 네트워크
-// (기능: UI 최적화 + 영구 뱃지 + 설정 메뉴)
+// (기능: UI 최적화 + 영구 뱃지 + 설정 메뉴 + 이미지 자르기)
 // ==========================================
 
 // 1. 서비스 워커 등록
@@ -75,7 +75,7 @@ function forceRefresh() {
     }
 }
 
-// [신규] 설정 모달 제어 함수
+// 설정 모달 제어 함수
 function openSettingsModal() {
     if(isFabOpen) toggleFabMenu();
     document.getElementById('settings-modal').classList.add('active');
@@ -130,6 +130,9 @@ let isDragAction = false;
 const brightColors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9", "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9", "#DCEDC8", "#F0F4C3", "#FFF9C4", "#FFECB3", "#FFE0B2", "#FFCCBC", "#D7CCC8", "#F5F5F5", "#CFD8DC"];
 
 let lastChatReadTime = Number(localStorage.getItem('lastChatReadTime')) || Date.now();
+
+// [신규] Cropper 인스턴스 저장 변수
+let cropper = null;
 
 function checkNotificationPermission() {
     if (!("Notification" in window)) return;
@@ -220,8 +223,6 @@ firebase.auth().onAuthStateChanged((user) => {
     if (user) {
         isAdmin = true;
         document.getElementById('body').classList.add('admin-mode');
-        // 설정 메뉴 안에서 관리자 모드가 활성화되었음을 시각적으로 표현하려면 추가 로직 필요하지만
-        // 일단 기능적으로는 admin-mode 클래스가 추가되어 삭제 버튼 등이 보임
     } else {
         isAdmin = false;
         document.getElementById('body').classList.remove('admin-mode');
@@ -525,7 +526,6 @@ function openPrayerPopup(data) {
     currentMemberData = data;
     newMemberIds.delete(data.id);
     
-    // [영구 읽음 저장]
     readStatus[data.id] = getTotalPrayerCount(data); 
     localStorage.setItem('prayerReadStatus', JSON.stringify(readStatus));
 
@@ -593,45 +593,92 @@ function addNewMember() { const n = prompt("이름:"); if(n && n.trim()) { if(co
 function updateMemberColor(v) { if(currentMemberData) membersRef.child(currentMemberData.firebaseKey).update({color: v}); }
 function deleteMember() { if(currentMemberData && confirm("삭제하시겠습니까?")) { membersRef.child(currentMemberData.firebaseKey).remove(); closePrayerPopup(); }}
 
+// [수정] 프로필 편집 및 자르기 기능
 let tempProfileImage = "";
+
 function editProfile() {
     if (!currentMemberData) return;
     document.getElementById('edit-profile-name').value = currentMemberData.name;
-    const currentImg = currentMemberData.photoUrl || "https://via.placeholder.com/150?text=No+Image";
-    document.getElementById('edit-profile-preview').src = currentImg;
-    tempProfileImage = currentMemberData.photoUrl || "";
+    
+    // 사진이 없으면 기본 이미지(투명/회색) 표시, 있으면 그 사진 표시
+    const currentImg = currentMemberData.photoUrl || "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+    const imgElement = document.getElementById('edit-profile-preview');
+    imgElement.src = currentImg;
+    
+    // 모달 열기
     document.getElementById('profile-edit-modal').classList.add('active');
+
+    // 만약 이미 Cropper가 있다면 제거 (초기화)
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
 }
-function closeProfileEditModal() { document.getElementById('profile-edit-modal').classList.remove('active'); }
+
+function closeProfileEditModal() { 
+    document.getElementById('profile-edit-modal').classList.remove('active'); 
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+}
+
 function handleProfileFileSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = function(e) {
-        const img = new Image();
-        img.src = e.target.result;
-        img.onload = function() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const Size = 300; 
-            canvas.width = Size; canvas.height = Size;
-            let sx, sy, sWidth, sHeight;
-            if (img.width > img.height) { sHeight = img.height; sWidth = img.height; sx = (img.width - img.height) / 2; sy = 0; }
-            else { sWidth = img.width; sHeight = img.width; sx = 0; sy = (img.height - img.width) / 2; }
-            ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, Size, Size);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-            document.getElementById('edit-profile-preview').src = dataUrl;
-            tempProfileImage = dataUrl;
-        };
+        const imgElement = document.getElementById('edit-profile-preview');
+        imgElement.src = e.target.result;
+
+        // 기존 Cropper 제거
+        if (cropper) {
+            cropper.destroy();
+        }
+
+        // 새 Cropper 시작 (약간의 딜레이를 주어 이미지가 로드된 후 실행)
+        setTimeout(() => {
+            cropper = new Cropper(imgElement, {
+                aspectRatio: 1, // 정사각형 비율 고정
+                viewMode: 1,    // 캔버스 밖으로 못 나가게
+                dragMode: 'move',
+                autoCropArea: 0.8,
+                restore: false,
+                guides: false,
+                center: false,
+                highlight: false,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                toggleDragModeOnDblclick: false,
+            });
+        }, 100);
     };
 }
+
 function saveProfileChanges() {
     if (!currentMemberData) return;
     const newName = document.getElementById('edit-profile-name').value.trim();
     if (!newName) return alert("이름을 입력해주세요.");
     if (containsBannedWords(newName)) return alert("부적절한 이름입니다.");
-    const updates = { name: newName, photoUrl: tempProfileImage };
+
+    let finalImageUrl = tempProfileImage;
+
+    // Cropper가 활성화되어 있다면(사진을 바꿨다면) 자른 이미지를 가져옴
+    if (cropper) {
+        // 캔버스에서 데이터 추출
+        const canvas = cropper.getCroppedCanvas({
+            width: 300,  // 저장될 크기 (너무 크면 DB 터짐)
+            height: 300
+        });
+        finalImageUrl = canvas.toDataURL('image/jpeg', 0.8); // JPEG, 퀄리티 0.8
+    } else {
+        // 사진을 안 바꿨으면 기존 사진 유지
+        finalImageUrl = currentMemberData.photoUrl || "";
+    }
+
+    const updates = { name: newName, photoUrl: finalImageUrl };
     membersRef.child(currentMemberData.firebaseKey).update(updates).then(() => {
         document.getElementById("panel-name").innerText = newName;
         closeProfileEditModal();
