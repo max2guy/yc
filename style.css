@@ -1,4 +1,4 @@
-/* style.css - Settings Menu Added */
+/* style.css - Visual Balanced & Admin Indicator */
 
 /* [기본 설정] 터치 최적화 & 하이라이트 제거 */
 * {
@@ -83,7 +83,12 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
 .float-btn {
     cursor: pointer; 
     transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); 
-    box-shadow: 0 4px 10px rgba(141, 110, 99, 0.2); border: none;
+    box-shadow: 0 4px 10px rgba(141, 110, 99, 0.2); 
+    border: none;
+    
+    /* [수정] 크기 통일의 핵심 (테두리 포함 50px) */
+    box-sizing: border-box; 
+    
     width: 50px !important; height: 50px !important; 
     border-radius: 50% !important; padding: 0 !important; margin: 0 !important;
     display: flex !important; align-items: center !important; justify-content: center !important;
@@ -98,8 +103,12 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
     align-items: center;
 }
 
+/* [수정] 메인 메뉴 버튼 (아이콘 줄여서 시각적 균형 맞춤) */
 .menu-main-btn {
-    background: #3E2723; color: white; font-size: 1.5rem; z-index: 101;
+    background: #3E2723; color: white; 
+    font-size: 1.2rem; /* 1.5 -> 1.2 */
+    z-index: 101;
+    box-shadow: 0 3px 8px rgba(62, 39, 35, 0.3);
 }
 .menu-open .menu-main-btn { transform: rotate(90deg); background: #5D4037; }
 
@@ -114,12 +123,18 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
     pointer-events: auto;
 }
 
-/* 기존 관리자/새로고침 버튼 스타일 제거 대신 설정 버튼 스타일 추가 */
 .add-member-btn { background: white; color: var(--theme-orange); border: 2px solid var(--theme-orange); }
 .add-member-btn svg { fill: var(--theme-orange); width: 24px; height: 24px; }
 
-/* Chat Button */
-.chat-btn { position: fixed; bottom: 30px; right: 30px; background: #FFECB3; color: #5D4037; border: 2px solid #FFCA28; font-size: 1.4rem; z-index: 100;}
+/* [수정] 채팅 버튼 (아이콘 키우고 테두리 두껍게) */
+.chat-btn { 
+    position: fixed; bottom: 30px; right: 30px; 
+    background: #FFECB3; 
+    color: #5D4037; 
+    font-size: 1.5rem; /* 1.4 -> 1.5 */
+    border: 3px solid #FFCA28; /* 2 -> 3px */
+    z-index: 100;
+}
 .chat-badge { position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; background: #FF5252; border-radius: 50%; border: 2px solid white; display: none; animation: pulse-red 1.5s infinite; z-index: 101; }
 .chat-badge.active { display: block; }
 
@@ -482,12 +497,12 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
 .sk-text-sm { height: 10px; width: 40%; margin-bottom: 12px; }
 .sk-block { height: 60px; width: 100%; margin-top:10px; }
 
-/* [신규] 설정 메뉴 스타일 */
+/* [설정 메뉴 스타일] */
 .settings-btn { 
-    background: white;          /* 흰색 변경 */
-    color: #5D4037;             /* 아이콘 갈색 */
+    background: white;         /* [수정] 배경 흰색 */
+    color: #5D4037;            /* [수정] 글자 갈색 */
     font-size: 1.4rem; 
-    border: 2px solid #5D4037;  /* 테두리 갈색 */
+    border: 2px solid #5D4037; /* [수정] 테두리 갈색 */
 }
 
 .settings-box {
@@ -529,14 +544,14 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
 .setting-icon { font-size: 1.2rem; }
 .setting-text { font-weight: bold; }
 
-/* [신규] 관리자 모드 표시기 스타일 */
+/* [신규] 관리자 모드 표시기 (하단 중앙) */
 .admin-indicator {
     position: fixed;
     bottom: 35px; /* 메뉴 버튼들과 같은 높이 */
     left: 50%;
-    transform: translateX(-50%); /* 정확히 가운데 정렬 */
+    transform: translateX(-50%); /* 중앙 정렬 */
     
-    background: #D32F2F; /* 강렬한 빨간색 */
+    background: #D32F2F; /* 빨간색 */
     color: white;
     padding: 8px 18px;
     border-radius: 30px;
@@ -545,13 +560,11 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item {
     box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
     
     z-index: 90;    /* 팝업보단 아래, 노드보단 위 */
-    display: none;  /* 기본적으로는 숨김 */
-    pointer-events: none; /* 클릭은 통과되도록 (뒤에 있는거 누를 수 있게) */
+    display: none;  /* 기본 숨김 */
+    pointer-events: none; /* 클릭 통과 */
 }
 
-/* 관리자 모드가 켜지면 보이게 설정 */
 body.admin-mode .admin-indicator {
-    display: block;
+    display: block; /* 관리자 모드 시 등장 */
     animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-
