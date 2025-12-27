@@ -10,7 +10,9 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
+    
+    <link rel="stylesheet" href="style.css?v=12">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -21,7 +23,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js" defer></script>
     
-    <script src="script.js?v=11" defer></script>
+    <script src="script.js?v=12" defer></script>
 </head>
 <body id="body">
 
@@ -42,7 +44,7 @@
     <div id="youtube-player" style="position: absolute; left: -9999px;"></div>
 
     <button id="music-btn" class="float-btn music-btn" onclick="event.stopPropagation(); toggleMusic()">
-        <div id="music-icon">🎵</div>
+        <span id="music-icon" class="material-symbols-rounded">music_note</span>
     </button>
 
     <button class="camp-btn top-ui-common" onclick="event.stopPropagation(); toggleCampPopup()">⛺ 2026 캠프</button>
@@ -67,15 +69,21 @@
     </div>
 
     <div id="menu-container">
-        <button class="float-btn menu-main-btn" onclick="event.stopPropagation(); toggleFabMenu()">☰</button>
-        <button class="float-btn sub-btn settings-btn" onclick="event.stopPropagation(); openSettingsModal()" title="설정">⚙️</button>
+        <button class="float-btn menu-main-btn" onclick="event.stopPropagation(); toggleFabMenu()">
+            <span class="material-symbols-rounded">menu</span>
+        </button>
+        
+        <button class="float-btn sub-btn settings-btn" onclick="event.stopPropagation(); openSettingsModal()" title="설정">
+            <span class="material-symbols-rounded">settings</span>
+        </button>
+        
         <button class="float-btn sub-btn add-member-btn" onclick="event.stopPropagation(); addNewMember()" title="사람 추가">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span class="material-symbols-rounded">person_add</span>
         </button>
     </div>
 
     <button class="chat-btn float-btn" onclick="event.stopPropagation(); toggleChatPopup()">
-        💬
+        <span class="material-symbols-rounded">chat</span>
         <div id="chat-badge" class="chat-badge"></div>
     </button>
     
@@ -165,7 +173,9 @@
             <div id="profile-view-mode" class="profile-upload-container">
                 <div class="profile-circle-wrapper">
                     <img id="edit-profile-preview" src="" alt="프로필" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0QwQzJCRSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg=='">
-                    <label for="profile-file-input" class="camera-btn">📷</label>
+                    <label for="profile-file-input" class="camera-btn">
+                        <span class="material-symbols-rounded" style="font-size: 1.2rem;">photo_camera</span>
+                    </label>
                     <input type="file" id="profile-file-input" accept="image/*" style="display: none;" onchange="handleProfileFileSelect(event)">
                 </div>
                 <p class="upload-guide">카메라 아이콘을 눌러 사진을 변경하세요</p>
@@ -227,4 +237,3 @@
 
 </body>
 </html>
-
