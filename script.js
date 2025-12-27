@@ -1,6 +1,6 @@
 // ==========================================
 // 연천장로교회 청년부 기도 네트워크
-// (기능: 인트로 + 안전장치 + 아이콘 + 접근성 + 배경음악 + 이스터에그 텍스트 수정)
+// (v20 최종: 성령의 불 에디션 🔥)
 // ==========================================
 
 // 1. 서비스 워커
@@ -121,7 +121,6 @@ function handleOnlineCounterClick() {
     eggClickCount++;
     if (eggTimer) clearTimeout(eggTimer);
     
-    // 모바일 터치 위해 1.5초로 여유 있게
     eggTimer = setTimeout(() => { eggClickCount = 0; }, 1500); 
 
     if (eggClickCount >= 5) {
@@ -135,10 +134,8 @@ function triggerHeartRain() {
     if (isHeartRain) {
         createHearts(); 
         centerNode.icon = "💖";
-        // [수정됨] 2줄로 변경
         centerNode.name = "사랑이 넘치는\n우리 청년부";
         updateGraph(); 
-        
         showWeatherToast("이스터에그 발견! 🎁", "사랑이 가득하네요 🥰", 6000);
         wctx.clearRect(0,0,wc.width,wc.height);
     } else {
@@ -146,7 +143,6 @@ function triggerHeartRain() {
         centerNode.icon = "✝️";
         centerNode.name = originalCenterName;
         updateGraph(); 
-
         showWeatherToast("일상 모드", "원래대로 돌아왔습니다.");
     }
     updateNodeVisuals();
@@ -391,7 +387,7 @@ function closeProfileEditModal() { document.getElementById('profile-edit-modal')
 function handleProfileFileSelect(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = function(e) { document.getElementById('profile-view-mode').style.display = 'none'; document.getElementById('profile-edit-mode').style.display = 'flex'; const imgElement = document.getElementById('cropper-target-img'); imgElement.src = e.target.result; if (cropper) cropper.destroy(); setTimeout(() => { cropper = new Cropper(imgElement, { aspectRatio: 1, viewMode: 1, dragMode: 'move', autoCropArea: 0.8 }); }, 100); }; }
 function saveProfileChanges() { if (!currentMemberData) return; const newName = document.getElementById('edit-profile-name').value.trim(); if (!newName) return alert("이름 입력"); if (containsBannedWords(newName)) return alert("부적절 이름"); let finalImageUrl = tempProfileImage; if (cropper) { finalImageUrl = cropper.getCroppedCanvas({width: 300, height: 300}).toDataURL('image/jpeg', 0.8); } else { finalImageUrl = currentMemberData.photoUrl || ""; } membersRef.child(currentMemberData.firebaseKey).update({ name: newName, photoUrl: finalImageUrl }).then(() => { document.getElementById("panel-name").innerText = newName; closeProfileEditModal(); }); }
 
-// Render Prayers (접근성 라벨 추가됨)
+// Render Prayers (성령의 불 효과 추가됨)
 function createSafeElement(tag, className, text) { const el = document.createElement(tag); if (className) el.className = className; if (text) el.textContent = text; return el; }
 function renderPrayers() {
     const list = document.getElementById("prayer-list"); list.innerHTML = "";
@@ -408,13 +404,12 @@ function renderPrayers() {
         const actionGroup = createSafeElement("div", "action-group");
         const amens = p.amens ? Object.keys(p.amens).length : 0; const iAmened = p.amens && p.amens[mySessionId];
 
-        // [접근성 수정] 삭제 버튼에 라벨 추가
         let delBtnHtml = `<button class="icon-btn delete-btn" onclick="deletePrayer(${i})" title="삭제" aria-label="삭제하기"><span class="material-symbols-rounded">delete_forever</span></button>`;
         if(isAdmin) delBtnHtml = `<button class="icon-btn admin-delete-btn-icon" style="color:white; background:#ef5350;" onclick="adminDeletePrayer(${i})" title="관리자 삭제" aria-label="관리자 권한 삭제"><span class="material-symbols-rounded">delete_forever</span></button>`;
 
-        // [접근성 수정] 고정, 수정, 답글 버튼에 라벨 추가
+        // [수정됨] onclick에 event 객체 전달
         actionGroup.innerHTML = `
-            <button class="amen-btn ${iAmened ? 'active' : ''}" onclick="toggleAmen(${i})" aria-label="아멘 하기"><span>🙏</span><span>아멘 ${amens > 0 ? amens : ''}</span></button>
+            <button class="amen-btn ${iAmened ? 'active' : ''}" onclick="toggleAmen(${i}, event)" aria-label="아멘 하기"><span>🙏</span><span>아멘 ${amens > 0 ? amens : ''}</span></button>
             <button class="icon-btn pin-btn ${p.isPinned ? 'active' : ''}" onclick="togglePin(${i})" title="고정" aria-label="상단 고정"><span class="material-symbols-rounded">push_pin</span></button>
             <button class="icon-btn edit-btn" onclick="editPrayer(${i})" title="수정" aria-label="내용 수정"><span class="material-symbols-rounded">edit</span></button>
             <button class="icon-btn reply-btn" onclick="addReply(${i})" title="답글" aria-label="답글 달기"><span class="material-symbols-rounded">chat_bubble</span></button>
@@ -435,7 +430,20 @@ function renderPrayers() {
     });
 }
 
-function toggleAmen(i) { if (!currentMemberData) return; const ref = firebase.database().ref(`members/${currentMemberData.firebaseKey}/prayers/${i}/amens`); if (currentMemberData.prayers[i].amens && currentMemberData.prayers[i].amens[mySessionId]) ref.child(mySessionId).remove(); else { ref.child(mySessionId).set(true); if(navigator.vibrate) navigator.vibrate(50); } }
+// [수정됨] 아멘 불꽃 기능
+function toggleAmen(i, e) { 
+    if (!currentMemberData) return; 
+    
+    // 1. 성령의 불 생성
+    if(e && e.clientX) {
+        createFirework(e.clientX, e.clientY);
+    }
+    
+    // 2. 파이어베이스 업데이트
+    const ref = firebase.database().ref(`members/${currentMemberData.firebaseKey}/prayers/${i}/amens`); 
+    if (currentMemberData.prayers[i].amens && currentMemberData.prayers[i].amens[mySessionId]) ref.child(mySessionId).remove(); 
+    else { ref.child(mySessionId).set(true); if(navigator.vibrate) navigator.vibrate(50); } 
+}
 function togglePin(i) { if (!currentMemberData) return; currentMemberData.prayers[i].isPinned = !currentMemberData.prayers[i].isPinned; membersRef.child(currentMemberData.firebaseKey).update({ prayers: currentMemberData.prayers }).then(() => renderPrayers()); }
 function deleteReply(pi, ri) { if(!confirm("답글 삭제?")) return; currentMemberData.prayers[pi].replies.splice(ri, 1); membersRef.child(currentMemberData.firebaseKey).update({ prayers: currentMemberData.prayers }).then(() => renderPrayers()); }
 function deletePrayer(i) { if(confirm("삭제?")) { currentMemberData.prayers.splice(i, 1); const d = currentMemberData.prayers.length>0?currentMemberData.prayers:[]; membersRef.child(currentMemberData.firebaseKey).update({prayers: d}); closePrayerPopup(); } }
@@ -477,12 +485,28 @@ function showWeatherToast(l, i, duration = 3000) {
     t.classList.add('show'); 
     setTimeout(() => t.classList.remove('show'), duration); 
 }
-const wc = document.getElementById('weather-canvas'); const wctx = wc.getContext('2d'); let wParts = [];
+const wc = document.getElementById('weather-canvas'); const wctx = wc.getContext('2d'); 
+let wParts = []; 
+let fireParts = []; // 불꽃 파티클 배열
+
 function resizeWeatherCanvas() { wc.width = window.innerWidth; wc.height = window.innerHeight; }
 function createRain() { wParts=[]; for(let i=0;i<35;i++) wParts.push({x:Math.random()*wc.width, y:Math.random()*wc.height, s:3+Math.random()*4, l:7+Math.random()*8}); }
 function createSnow() { wParts=[]; for(let i=0;i<35;i++) wParts.push({x:Math.random()*wc.width, y:Math.random()*wc.height, s:1+Math.random()*2, r:2+Math.random()*3}); }
-// [이스터에그] 하트 생성 함수
 function createHearts() { wParts=[]; for(let i=0;i<30;i++) wParts.push({x:Math.random()*wc.width, y:Math.random()*wc.height, s:2+Math.random()*2}); }
+
+// [성령의 불] 파티클 생성
+function createFirework(x, y) {
+    for(let k=0; k<25; k++) {
+        fireParts.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 8, // 좌우 퍼짐
+            vy: (Math.random() - 0.5) * 8 - 3, // 약간 위로 솟구침
+            life: 1.0,
+            color: `hsl(${30 + Math.random() * 30}, 100%, 60%)`, // 금색~주황색
+            size: 3 + Math.random() * 4
+        });
+    }
+}
 
 function openLightbox(src) { document.getElementById('lightbox-img').src=src; document.getElementById('lightbox').classList.add('active'); }
 function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
@@ -490,14 +514,40 @@ let lastTime = 0; const fpsInterval = 1000/60;
 function gameLoop(time) {
     requestAnimationFrame(gameLoop); const elapsed = time - lastTime; if (elapsed < fpsInterval) return; lastTime = time - (elapsed % fpsInterval);
     if(node) { members.forEach(m => { m.rotation = (m.rotation||0) + (m.rotationDirection*0.1); if(m.rotation>360) m.rotation-=360; else if(m.rotation<-360) m.rotation+=360; }); node.attr("transform", d => `translate(${d.x},${d.y}) rotate(${d.rotation||0})`); if(link) link.attr("x1", d=>d.source.x).attr("y1", d=>d.source.y).attr("x2", d=>d.target.x).attr("y2", d=>d.target.y); }
-    if(wParts.length>0) { 
+    
+    // 캔버스 그리기 (날씨 + 불꽃)
+    if(wParts.length > 0 || fireParts.length > 0) { 
         wctx.clearRect(0,0,wc.width,wc.height); 
-        if(isHeartRain) {
-            wctx.fillStyle = "#FF4081"; wctx.font = "20px serif";
-            wParts.forEach(p => { wctx.fillText("💖", p.x, p.y); p.y+=p.s; if(p.y>wc.height) p.y=-20; });
-        } else {
-            wctx.fillStyle="rgba(255,255,255,0.8)"; wctx.strokeStyle="rgba(174,194,224,0.8)"; wctx.lineWidth=1;
-            wParts.forEach(p => { if(centerNode.icon==="🌧️") { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.lineTo(p.x,p.y+p.l); wctx.stroke(); p.y+=p.s; if(p.y>wc.height) p.y=-p.l; } else { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.arc(p.x,p.y,p.r,0,Math.PI*2); wctx.fill(); p.y+=p.s; if(p.y>wc.height) p.y=-5; } });
+        
+        // 날씨/하트 그리기
+        if(wParts.length > 0) {
+            if(isHeartRain) {
+                wctx.fillStyle = "#FF4081"; wctx.font = "20px serif";
+                wParts.forEach(p => { wctx.fillText("💖", p.x, p.y); p.y+=p.s; if(p.y>wc.height) p.y=-20; });
+            } else {
+                wctx.fillStyle="rgba(255,255,255,0.8)"; wctx.strokeStyle="rgba(174,194,224,0.8)"; wctx.lineWidth=1;
+                wParts.forEach(p => { if(centerNode.icon==="🌧️") { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.lineTo(p.x,p.y+p.l); wctx.stroke(); p.y+=p.s; if(p.y>wc.height) p.y=-p.l; } else { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.arc(p.x,p.y,p.r,0,Math.PI*2); wctx.fill(); p.y+=p.s; if(p.y>wc.height) p.y=-5; } });
+            }
+        }
+
+        // [성령의 불] 불꽃 그리기
+        if(fireParts.length > 0) {
+            for(let i = fireParts.length - 1; i >= 0; i--) {
+                let p = fireParts[i];
+                wctx.beginPath();
+                wctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                wctx.fillStyle = p.color;
+                wctx.globalAlpha = p.life; // 투명도 조절
+                wctx.fill();
+                wctx.globalAlpha = 1.0;
+
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02; // 서서히 사라짐
+                p.size *= 0.95; // 서서히 작아짐
+
+                if(p.life <= 0) fireParts.splice(i, 1);
+            }
         }
     }
 }
