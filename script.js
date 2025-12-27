@@ -1,6 +1,6 @@
 // ==========================================
 // 연천장로교회 청년부 기도 네트워크
-// (기능: 인트로 + 안전장치 + 아이콘 + 접근성 + 배경음악 + 이스터에그 보완)
+// (기능: 인트로 + 안전장치 + 아이콘 + 접근성 + 배경음악 + 이스터에그 텍스트 수정)
 // ==========================================
 
 // 1. 서비스 워커
@@ -109,21 +109,19 @@ presenceRef.on('value', (snapshot) => {
     document.getElementById('online-count').innerText = `${count}명 접속 중`; 
 });
 
-// [이스터에그] 변수 및 함수 (모바일 터치 보완)
+// [이스터에그] 변수 및 함수
 let eggClickCount = 0;
 let eggTimer = null;
 let isHeartRain = false;
-const originalCenterName = "연천장로교회\n청년부\n함께 기도해요"; // 원래 이름 저장
+const originalCenterName = "연천장로교회\n청년부\n함께 기도해요"; 
 
 function handleOnlineCounterClick() {
-    // 관리자 모드 진입용
     if (isAdmin) { showConnectedUsers(); return; }
 
-    // 이스터에그 카운트 (5번 연속 클릭)
     eggClickCount++;
     if (eggTimer) clearTimeout(eggTimer);
     
-    // [보완] 시간을 1초 -> 1.5초로 늘려서 모바일에서 더 쉽게 발동되게 함
+    // 모바일 터치 위해 1.5초로 여유 있게
     eggTimer = setTimeout(() => { eggClickCount = 0; }, 1500); 
 
     if (eggClickCount >= 5) {
@@ -137,17 +135,15 @@ function triggerHeartRain() {
     if (isHeartRain) {
         createHearts(); 
         centerNode.icon = "💖";
-        // [추가] 텍스트 변경
-        centerNode.name = "사랑이\n넘치는\n우리 청년부";
-        updateGraph(); // 텍스트 변경 반영을 위해 그래프 갱신
+        // [수정됨] 2줄로 변경
+        centerNode.name = "사랑이 넘치는\n우리 청년부";
+        updateGraph(); 
         
-        // [보완] 토스트 메시지 시간 6초로 설정
         showWeatherToast("이스터에그 발견! 🎁", "사랑이 가득하네요 🥰", 6000);
         wctx.clearRect(0,0,wc.width,wc.height);
     } else {
         fetchWeather(); 
         centerNode.icon = "✝️";
-        // [추가] 텍스트 원상복구
         centerNode.name = originalCenterName;
         updateGraph(); 
 
@@ -479,7 +475,6 @@ function showWeatherToast(l, i, duration = 3000) {
     const t = document.getElementById('weather-toast'); 
     document.getElementById('weather-text').innerHTML = `📍 ${l}<br>${i}`; 
     t.classList.add('show'); 
-    // [보완] 시간 조절 기능 (기본 3초)
     setTimeout(() => t.classList.remove('show'), duration); 
 }
 const wc = document.getElementById('weather-canvas'); const wctx = wc.getContext('2d'); let wParts = [];
@@ -497,7 +492,6 @@ function gameLoop(time) {
     if(node) { members.forEach(m => { m.rotation = (m.rotation||0) + (m.rotationDirection*0.1); if(m.rotation>360) m.rotation-=360; else if(m.rotation<-360) m.rotation+=360; }); node.attr("transform", d => `translate(${d.x},${d.y}) rotate(${d.rotation||0})`); if(link) link.attr("x1", d=>d.source.x).attr("y1", d=>d.source.y).attr("x2", d=>d.target.x).attr("y2", d=>d.target.y); }
     if(wParts.length>0) { 
         wctx.clearRect(0,0,wc.width,wc.height); 
-        // [이스터에그] 하트 그리기 로직
         if(isHeartRain) {
             wctx.fillStyle = "#FF4081"; wctx.font = "20px serif";
             wParts.forEach(p => { wctx.fillText("💖", p.x, p.y); p.y+=p.s; if(p.y>wc.height) p.y=-20; });
