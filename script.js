@@ -1,6 +1,6 @@
 // ==========================================
 // 연천장로교회 청년부 기도 네트워크
-// (기능: 인트로 + 안전장치 + 아이콘 + 접근성 + 배경음악)
+// (기능: 인트로 + 안전장치 + 아이콘 + 접근성 + 배경음악 + 이스터에그🎁)
 // ==========================================
 
 // 1. 서비스 워커
@@ -104,10 +104,52 @@ function setAppBadge(count) { if ('setAppBadge' in navigator) { if (count > 0) n
 async function getMyIp() { try { const res = await fetch('https://api.ipify.org?format=json'); const data = await res.json(); return data.ip; } catch (e) { return '알수없음'; } }
 
 onlineRef.on('value', async (snapshot) => { if (snapshot.val()) { const myIp = await getMyIp(); const con = presenceRef.push(); con.onDisconnect().remove(); con.set({ ip: myIp, time: Date.now(), device: navigator.userAgent }); } });
-presenceRef.on('value', (snapshot) => { const count = snapshot.numChildren() || 0; document.getElementById('online-count').innerText = `${count}명 접속 중`; document.querySelector('.online-counter').onclick = showConnectedUsers; });
+presenceRef.on('value', (snapshot) => { 
+    const count = snapshot.numChildren() || 0; 
+    document.getElementById('online-count').innerText = `${count}명 접속 중`; 
+    // [이스터에그 트리거] 온라인 카운터 클릭 시 처리
+    document.querySelector('.online-counter').onclick = handleOnlineCounterClick;
+});
+
+// [이스터에그] 변수 및 함수
+let eggClickCount = 0;
+let eggTimer = null;
+let isHeartRain = false;
+
+function handleOnlineCounterClick() {
+    // 관리자 모드 진입용 팝업 (기존)
+    if (isAdmin) { showConnectedUsers(); return; }
+
+    // 이스터에그 카운트 (5번 연속 클릭)
+    eggClickCount++;
+    if (eggTimer) clearTimeout(eggTimer);
+    
+    eggTimer = setTimeout(() => { eggClickCount = 0; }, 1000); // 1초 안에 연타해야 함
+
+    if (eggClickCount >= 5) {
+        eggClickCount = 0;
+        triggerHeartRain();
+    }
+}
+
+function triggerHeartRain() {
+    isHeartRain = !isHeartRain; // 켜고 끄기 토글
+    if (isHeartRain) {
+        createHearts(); // 하트 생성
+        centerNode.icon = "💖"; // 십자가 -> 하트
+        showWeatherToast("이스터에그 발견! 🎁", "하나님의 사랑이 가득하네요 🥰");
+        // 파티클 효과를 위해 캔버스 초기화
+        wctx.clearRect(0,0,wc.width,wc.height);
+    } else {
+        // 원래대로 복구 (날씨 다시 불러오기)
+        fetchWeather(); 
+        centerNode.icon = "✝️";
+        showWeatherToast("일상 모드", "원래대로 돌아왔습니다.");
+    }
+    updateNodeVisuals();
+}
 
 function showConnectedUsers() {
-    if (!isAdmin) return;
     presenceRef.once('value').then(snap => {
         const data = snap.val();
         const existing = document.getElementById('kick-modal'); if(existing) existing.remove();
@@ -431,14 +473,25 @@ const wc = document.getElementById('weather-canvas'); const wctx = wc.getContext
 function resizeWeatherCanvas() { wc.width = window.innerWidth; wc.height = window.innerHeight; }
 function createRain() { wParts=[]; for(let i=0;i<35;i++) wParts.push({x:Math.random()*wc.width, y:Math.random()*wc.height, s:3+Math.random()*4, l:7+Math.random()*8}); }
 function createSnow() { wParts=[]; for(let i=0;i<35;i++) wParts.push({x:Math.random()*wc.width, y:Math.random()*wc.height, s:1+Math.random()*2, r:2+Math.random()*3}); }
+// [이스터에그] 하트 생성 함수
+function createHearts() { wParts=[]; for(let i=0;i<30;i++) wParts.push({x:Math.random()*wc.width, y:Math.random()*wc.height, s:2+Math.random()*2}); }
+
 function openLightbox(src) { document.getElementById('lightbox-img').src=src; document.getElementById('lightbox').classList.add('active'); }
 function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
 let lastTime = 0; const fpsInterval = 1000/60;
 function gameLoop(time) {
     requestAnimationFrame(gameLoop); const elapsed = time - lastTime; if (elapsed < fpsInterval) return; lastTime = time - (elapsed % fpsInterval);
     if(node) { members.forEach(m => { m.rotation = (m.rotation||0) + (m.rotationDirection*0.1); if(m.rotation>360) m.rotation-=360; else if(m.rotation<-360) m.rotation+=360; }); node.attr("transform", d => `translate(${d.x},${d.y}) rotate(${d.rotation||0})`); if(link) link.attr("x1", d=>d.source.x).attr("y1", d=>d.source.y).attr("x2", d=>d.target.x).attr("y2", d=>d.target.y); }
-    if(wParts.length>0) { wctx.clearRect(0,0,wc.width,wc.height); wctx.fillStyle="rgba(255,255,255,0.8)"; wctx.strokeStyle="rgba(174,194,224,0.8)"; wctx.lineWidth=1;
-        wParts.forEach(p => { if(centerNode.icon==="🌧️") { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.lineTo(p.x,p.y+p.l); wctx.stroke(); p.y+=p.s; if(p.y>wc.height) p.y=-p.l; } else { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.arc(p.x,p.y,p.r,0,Math.PI*2); wctx.fill(); p.y+=p.s; if(p.y>wc.height) p.y=-5; } });
+    if(wParts.length>0) { 
+        wctx.clearRect(0,0,wc.width,wc.height); 
+        // [이스터에그] 하트 그리기 로직
+        if(isHeartRain) {
+            wctx.fillStyle = "#FF4081"; wctx.font = "20px serif";
+            wParts.forEach(p => { wctx.fillText("💖", p.x, p.y); p.y+=p.s; if(p.y>wc.height) p.y=-20; });
+        } else {
+            wctx.fillStyle="rgba(255,255,255,0.8)"; wctx.strokeStyle="rgba(174,194,224,0.8)"; wctx.lineWidth=1;
+            wParts.forEach(p => { if(centerNode.icon==="🌧️") { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.lineTo(p.x,p.y+p.l); wctx.stroke(); p.y+=p.s; if(p.y>wc.height) p.y=-p.l; } else { wctx.beginPath(); wctx.moveTo(p.x,p.y); wctx.arc(p.x,p.y,p.r,0,Math.PI*2); wctx.fill(); p.y+=p.s; if(p.y>wc.height) p.y=-5; } });
+        }
     }
 }
 resizeWeatherCanvas(); requestAnimationFrame(gameLoop);
