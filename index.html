@@ -10,7 +10,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=10">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -21,14 +21,29 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js" defer></script>
     
-    <script src="script.js?v=9" defer></script>
+    <script src="script.js?v=10" defer></script>
 </head>
 <body id="body">
 
-    <div id="loading">
-        <div class="spinner"></div>
-        <div class="loading-text">기도 네트워크 연결 중...</div>
+    <div id="intro-screen">
+        <div class="intro-content">
+            <div class="intro-icon">✝️</div>
+            <h1>연천장로교회 청년부</h1>
+            <p>기도 네트워크에 오신 것을 환영합니다</p>
+            
+            <div id="intro-loading-spinner" class="spinner"></div>
+            
+            <button id="enter-btn" class="enter-btn" onclick="enterApp()" style="display: none;">
+                입장하기
+            </button>
+        </div>
     </div>
+
+    <div id="youtube-player" style="position: absolute; left: -9999px;"></div>
+
+    <button id="music-btn" class="float-btn music-btn" onclick="event.stopPropagation(); toggleMusic()">
+        <div id="music-icon">🎵</div>
+    </button>
 
     <button class="camp-btn top-ui-common" onclick="event.stopPropagation(); toggleCampPopup()">⛺ 2026 캠프</button>
     <div class="online-counter top-ui-common">
@@ -150,7 +165,6 @@
             <div id="profile-view-mode" class="profile-upload-container">
                 <div class="profile-circle-wrapper">
                     <img id="edit-profile-preview" src="" alt="프로필" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0QwQzJCRSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg=='">
-                    
                     <label for="profile-file-input" class="camera-btn">📷</label>
                     <input type="file" id="profile-file-input" accept="image/*" style="display: none;" onchange="handleProfileFileSelect(event)">
                 </div>
@@ -203,7 +217,7 @@
                     <span class="setting-text">앱 새로고침 (오류 해결)</span>
                 </button>
                 <div style="margin-top: 20px; font-size: 0.8rem; color: #aaa; text-align: center;">
-                    버전 1.4.0 | 연천장로교회 청년부
+                    버전 2.0.0 | 연천장로교회 청년부
                 </div>
             </div>
         </div>
