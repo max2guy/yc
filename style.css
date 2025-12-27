@@ -1,4 +1,4 @@
-/* style.css - Final Fixed V15 */
+/* style.css - Final Version 17 (Popup Height Reduced) */
 
 * { -webkit-tap-highlight-color: transparent; }
 
@@ -27,7 +27,7 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item, .camera-btn, .enter-btn
     -webkit-user-select: none;
 }
 
-/* [구글 아이콘] */
+/* [구글 아이콘 공통] */
 .material-symbols-rounded {
     font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     font-size: 1.6rem; line-height: 1; display: block;
@@ -142,10 +142,22 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item, .camera-btn, .enter-btn
 .refresh-icon { animation: spin-slow 2s infinite linear; font-size: 1.1rem; }
 @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* [팝업 공통] */
+/* [팝업 공통] 높이 조절 버전 */
 .popup-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 2000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
 .popup-overlay.active { display: flex; opacity: 1; }
-.popup-content { background: #FFF8E1; width: 90%; max-width: 500px; height: 85vh; max-height: 700px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.9); transition: transform 0.3s ease; position: relative; }
+.popup-content { 
+    background: #FFF8E1; 
+    width: 90%; 
+    max-width: 500px; 
+    
+    /* [높이 조절됨] */
+    height: 75vh;       
+    max-height: 600px;  
+    
+    border-radius: 20px; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); 
+    display: flex; flex-direction: column; overflow: hidden; transform: scale(0.9); transition: transform 0.3s ease; position: relative; 
+}
 .popup-overlay.active .popup-content { transform: scale(1); }
 .popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #FFE0B2; padding: 15px; flex-shrink: 0; background: rgba(255, 255, 255, 0.5); }
 .popup-header h2 { margin: 0; font-size: 1.2rem; color: #8D6E63; }
@@ -163,7 +175,7 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item, .camera-btn, .enter-btn
 .prayer-content { font-size: 1rem; line-height: 1.6; color: #3E2723; word-wrap: break-word; white-space: pre-wrap; margin-bottom: 15px; font-weight: 500; }
 .action-group { display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px dashed #eee; }
 
-/* [신규] 알록달록 아이콘 버튼 */
+/* [알록달록 아이콘 버튼] */
 .icon-btn { background: #F5F5F5; border: none; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease-in-out; color: #8D6E63; }
 .action-group .icon-btn .material-symbols-rounded { font-size: 1.4rem; }
 
@@ -214,7 +226,7 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item, .camera-btn, .enter-btn
 .color-trigger-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; transition: transform 0.2s; }
 .color-trigger-btn:hover { transform: scale(1.1); }
 
-/* [캠프 & 채팅 복구] */
+/* [캠프 & 채팅] */
 .camp-img-container { margin-bottom: 20px; padding: 0 15px; }
 .camp-img-title { font-size: 1rem; font-weight: bold; color: #5D4037; margin-bottom: 10px; display: block; border-left: 5px solid #FF7043; padding-left: 10px; }
 .camp-image { width: 100%; height: auto; display: block; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; }
