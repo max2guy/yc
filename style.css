@@ -125,9 +125,18 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item, .camera-btn, .enter-btn
 /* [토스트 메시지] */
 .system-toast {
     position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px);
-    background: #333; color: white; padding: 12px 24px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    z-index: 10000; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 10px; cursor: pointer;
+    background: #333; color: white; padding: 12px 24px;
+    border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 10000; font-size: 0.9rem; font-weight: bold;
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
     transition: transform 0.4s; opacity: 0; pointer-events: none;
+    
+    /* ▼▼▼ [수정/추가된 부분] ▼▼▼ */
+    white-space: nowrap;  /* 글자가 길어도 자동 줄바꿈 금지 (핵심) */
+    width: auto;          /* 내용물 크기만큼 가로로 늘어남 */
+    max-width: 90vw;      /* 화면 너비의 90%는 넘지 않게 (폰 밖으로 나감 방지) */
+    justify-content: center; /* 내용 중앙 정렬 */
+    /* ▲▲▲ -------------------- ▲▲▲ */
 }
 .system-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
 #weather-toast { top: auto; bottom: 100px; background: rgba(255, 255, 255, 0.9); color: #5D4037; border: 1px solid #8D6E63; }
@@ -275,3 +284,4 @@ body.admin-mode .admin-indicator { display: block; animation: popIn 0.3s cubic-b
 .install-confirm { background: #8D6E63; color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(141, 110, 99, 0.3); }
 .install-dismiss { background: transparent; border: none; font-size: 1.8rem; color: #bbb; cursor: pointer; padding: 0 5px; line-height: 1; }
 @media (max-width: 768px) { .install-banner.show { bottom: calc(20px + env(safe-area-inset-bottom)); } }
+
