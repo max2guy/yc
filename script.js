@@ -1,6 +1,6 @@
 // ==========================================
 // 연천장로교회 청년부 기도 네트워크
-// (기능: 인트로 + 안전장치 + 아이콘 + 자르기 + 배경음악)
+// (기능: 인트로 + 안전장치 + 아이콘 + 접근성 + 배경음악)
 // ==========================================
 
 // 1. 서비스 워커
@@ -113,7 +113,7 @@ function showConnectedUsers() {
         const existing = document.getElementById('kick-modal'); if(existing) existing.remove();
         const modal = document.createElement('div'); modal.id = 'kick-modal';
         modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;justify-content:center;align-items:center;animation:fadeIn 0.2s;";
-        let content = `<div style="background:white;width:85%;max-width:350px;border-radius:15px;padding:20px;max-height:70vh;overflow-y:auto;box-shadow:0 10px 25px rgba(0,0,0,0.5);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:2px solid #FFAB91;padding-bottom:10px;"><h3 style="margin:0;color:#5D4037;">👮 접속자 관리</h3><button onclick="document.getElementById('kick-modal').remove()" style="border:none;background:none;font-size:1.5rem;cursor:pointer;">&times;</button></div>`;
+        let content = `<div style="background:white;width:85%;max-width:350px;border-radius:15px;padding:20px;max-height:70vh;overflow-y:auto;box-shadow:0 10px 25px rgba(0,0,0,0.5);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:2px solid #FFAB91;padding-bottom:10px;"><h3 style="margin:0;color:#5D4037;">👮 접속자 관리</h3><button onclick="document.getElementById('kick-modal').remove()" style="border:none;background:none;font-size:1.5rem;cursor:pointer;" aria-label="닫기">&times;</button></div>`;
         if (!data) content += `<p style="text-align:center;color:#888;">현재 접속자가 없습니다.</p>`;
         else {
             Object.entries(data).forEach(([key, user]) => {
@@ -124,7 +124,7 @@ function showConnectedUsers() {
                     const time = new Date(user.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     info = `<b>${device}</b><br><span style="font-size:0.8rem;color:#888;">${user.ip} / ${time}</span>`;
                 }
-                content += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed #eee;"><div style="font-size:0.9rem;color:#333;line-height:1.4;">${info}</div><button onclick="kickUser('${key}')" style="background:#FF5252;color:white;border:none;padding:6px 12px;border-radius:20px;cursor:pointer;font-weight:bold;font-size:0.8rem;box-shadow:0 2px 5px rgba(0,0,0,0.2);">Kick 👢</button></div>`;
+                content += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed #eee;"><div style="font-size:0.9rem;color:#333;line-height:1.4;">${info}</div><button onclick="kickUser('${key}')" style="background:#FF5252;color:white;border:none;padding:6px 12px;border-radius:20px;cursor:pointer;font-weight:bold;font-size:0.8rem;box-shadow:0 2px 5px rgba(0,0,0,0.2);" aria-label="강제 퇴장">Kick 👢</button></div>`;
             });
         }
         content += `</div>`; modal.innerHTML = content; modal.onclick = (e) => { if(e.target === modal) modal.remove(); }; document.body.appendChild(modal);
@@ -154,7 +154,6 @@ function showEnterButton() {
 }
 
 function loadData() {
-    // 5초 타임아웃 (안전장치)
     setTimeout(() => { if(!isDataLoaded) showEnterButton(); }, 5000);
 
     Promise.all([membersRef.once('value'), centerNodeRef.once('value')])
@@ -169,7 +168,6 @@ function loadData() {
             if(m.rotation === undefined) m.rotation = 0;
         });
 
-        // 정상 로딩 완료 시 버튼 표시
         showEnterButton();
         updateGraph(); 
 
@@ -185,7 +183,6 @@ function loadData() {
     })
     .catch(err => {
         console.log("Error:", err);
-        // 에러 나도 입장은 가능하게
         showEnterButton();
         updateGraph(); 
     });
@@ -349,7 +346,7 @@ function closeProfileEditModal() { document.getElementById('profile-edit-modal')
 function handleProfileFileSelect(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = function(e) { document.getElementById('profile-view-mode').style.display = 'none'; document.getElementById('profile-edit-mode').style.display = 'flex'; const imgElement = document.getElementById('cropper-target-img'); imgElement.src = e.target.result; if (cropper) cropper.destroy(); setTimeout(() => { cropper = new Cropper(imgElement, { aspectRatio: 1, viewMode: 1, dragMode: 'move', autoCropArea: 0.8 }); }, 100); }; }
 function saveProfileChanges() { if (!currentMemberData) return; const newName = document.getElementById('edit-profile-name').value.trim(); if (!newName) return alert("이름 입력"); if (containsBannedWords(newName)) return alert("부적절 이름"); let finalImageUrl = tempProfileImage; if (cropper) { finalImageUrl = cropper.getCroppedCanvas({width: 300, height: 300}).toDataURL('image/jpeg', 0.8); } else { finalImageUrl = currentMemberData.photoUrl || ""; } membersRef.child(currentMemberData.firebaseKey).update({ name: newName, photoUrl: finalImageUrl }).then(() => { document.getElementById("panel-name").innerText = newName; closeProfileEditModal(); }); }
 
-// Render Prayers (알록달록 아이콘 적용)
+// Render Prayers (접근성 라벨 추가됨)
 function createSafeElement(tag, className, text) { const el = document.createElement(tag); if (className) el.className = className; if (text) el.textContent = text; return el; }
 function renderPrayers() {
     const list = document.getElementById("prayer-list"); list.innerHTML = "";
@@ -366,14 +363,16 @@ function renderPrayers() {
         const actionGroup = createSafeElement("div", "action-group");
         const amens = p.amens ? Object.keys(p.amens).length : 0; const iAmened = p.amens && p.amens[mySessionId];
 
-        let delBtnHtml = `<button class="icon-btn delete-btn" onclick="deletePrayer(${i})" title="삭제"><span class="material-symbols-rounded">delete_forever</span></button>`;
-        if(isAdmin) delBtnHtml = `<button class="icon-btn admin-delete-btn-icon" style="color:white; background:#ef5350;" onclick="adminDeletePrayer(${i})" title="관리자 삭제"><span class="material-symbols-rounded">delete_forever</span></button>`;
+        // [접근성 수정] 삭제 버튼에 라벨 추가
+        let delBtnHtml = `<button class="icon-btn delete-btn" onclick="deletePrayer(${i})" title="삭제" aria-label="삭제하기"><span class="material-symbols-rounded">delete_forever</span></button>`;
+        if(isAdmin) delBtnHtml = `<button class="icon-btn admin-delete-btn-icon" style="color:white; background:#ef5350;" onclick="adminDeletePrayer(${i})" title="관리자 삭제" aria-label="관리자 권한 삭제"><span class="material-symbols-rounded">delete_forever</span></button>`;
 
+        // [접근성 수정] 고정, 수정, 답글 버튼에 라벨 추가
         actionGroup.innerHTML = `
-            <button class="amen-btn ${iAmened ? 'active' : ''}" onclick="toggleAmen(${i})"><span>🙏</span><span>아멘 ${amens > 0 ? amens : ''}</span></button>
-            <button class="icon-btn pin-btn ${p.isPinned ? 'active' : ''}" onclick="togglePin(${i})" title="고정"><span class="material-symbols-rounded">push_pin</span></button>
-            <button class="icon-btn edit-btn" onclick="editPrayer(${i})" title="수정"><span class="material-symbols-rounded">edit</span></button>
-            <button class="icon-btn reply-btn" onclick="addReply(${i})" title="답글"><span class="material-symbols-rounded">chat_bubble</span></button>
+            <button class="amen-btn ${iAmened ? 'active' : ''}" onclick="toggleAmen(${i})" aria-label="아멘 하기"><span>🙏</span><span>아멘 ${amens > 0 ? amens : ''}</span></button>
+            <button class="icon-btn pin-btn ${p.isPinned ? 'active' : ''}" onclick="togglePin(${i})" title="고정" aria-label="상단 고정"><span class="material-symbols-rounded">push_pin</span></button>
+            <button class="icon-btn edit-btn" onclick="editPrayer(${i})" title="수정" aria-label="내용 수정"><span class="material-symbols-rounded">edit</span></button>
+            <button class="icon-btn reply-btn" onclick="addReply(${i})" title="답글" aria-label="답글 달기"><span class="material-symbols-rounded">chat_bubble</span></button>
             ${delBtnHtml}
         `;
         div.appendChild(header); div.appendChild(content); div.appendChild(actionGroup);
@@ -382,7 +381,7 @@ function renderPrayers() {
             const replySection = createSafeElement("div", "reply-section");
             p.replies.forEach((r, rIndex) => { 
                 const rItem = document.createElement("div"); rItem.className = "reply-item";
-                rItem.innerHTML = `<span class="reply-icon">↳</span><span style="flex-grow:1; word-break:break-all;">${r.content}</span><button class="reply-delete-btn" onclick="deleteReply(${i}, ${rIndex})">&times;</button>`;
+                rItem.innerHTML = `<span class="reply-icon">↳</span><span style="flex-grow:1; word-break:break-all;">${r.content}</span><button class="reply-delete-btn" onclick="deleteReply(${i}, ${rIndex})" aria-label="답글 삭제">&times;</button>`;
                 replySection.appendChild(rItem); 
             });
             div.appendChild(replySection);
