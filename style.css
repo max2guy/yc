@@ -1,4 +1,4 @@
-/* style.css - Final Version 20 (Holy Spirit Fire Edition) */
+/* style.css - Final Version 21 (Firework Fix) */
 
 * { -webkit-tap-highlight-color: transparent; }
 
@@ -41,7 +41,17 @@ button, .float-btn, .icon-btn, .amen-btn, .setting-item, .camera-btn, .enter-btn
 
 #visualization { width: 100vw; height: 100dvh; position: relative; z-index: 10; }
 #visualization svg { touch-action: none; }
-#weather-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+
+/* [수정됨 v21] 캔버스 레이어를 팝업 위로 올림 (불꽃 효과용) */
+#weather-canvas { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    pointer-events: none; /* 클릭은 통과시킴 */
+    z-index: 2500; /* 팝업(2000)보다 높게 설정 */
+}
 
 /* [인트로 화면] */
 #intro-screen {
